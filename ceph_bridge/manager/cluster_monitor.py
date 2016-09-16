@@ -13,10 +13,10 @@ from tendrl.ceph_bridge.common.types import OsdMap
 from tendrl.ceph_bridge.common.types import POOL
 from tendrl.ceph_bridge.common.types import SYNC_OBJECT_STR_TYPE
 from tendrl.ceph_bridge.common.types import SYNC_OBJECT_TYPES
+from tendrl.ceph_bridge import config
 from tendrl.ceph_bridge.gevent_util import nosleep
 from tendrl.ceph_bridge.gevent_util import nosleep_mgr
 from tendrl.ceph_bridge.log import log
-from tendrl.ceph_bridge.manager import config
 from tendrl.ceph_bridge.manager.crush_node_request_factory \
     import CrushNodeRequestFactory
 from tendrl.ceph_bridge.manager.crush_request_factory \

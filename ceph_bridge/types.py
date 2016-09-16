@@ -1,4 +1,4 @@
-from ceph_bridge.logging import LOG
+from ceph_bridge.log import log
 from ceph_bridge.util import memoize
 from collections import defaultdict
 from collections import namedtuple
@@ -129,7 +129,7 @@ class OsdMap(VersionedSyncObject):
     def _map_osd_metadata(self, metadata):
         osd_id_to_metadata = {}
         if len(metadata) == 0:
-            LOG.info(
+            log.info(
                 'No OSD metadata found in OSDMap version:{v}'
                 ' try running "sudo salt \'*\' '
                 'salt_util.sync_modules"'.format(v=self.version)
@@ -166,7 +166,7 @@ class OsdMap(VersionedSyncObject):
                     if (child_id, node['id']) not in has_been_mapped:
                         parent_map[child_id].append(node)
                         has_been_mapped.add((child_id, node['id']))
-        LOG.info(
+        log.info(
             'crush node parent map {p} version {v}'.format(
                 p=parent_map, v=self.version
             )
@@ -285,7 +285,7 @@ class OsdMap(VersionedSyncObject):
                 # Fallthrough, the pool size didn't fall within any of the
                 # rules in its ruleset, Calamari doesn't understand.
                 # Just report all OSDs instead of failing horribly.
-                LOG.error("Cannot determine OSDS for pool %s" % pool_id)
+                log.error("Cannot determine OSDS for pool %s" % pool_id)
                 osds = self.osds_by_id.keys()
 
             result[pool_id] = osds
@@ -304,7 +304,7 @@ class OsdMap(VersionedSyncObject):
                 try:
                     osds[in_pool_id].append(pool_id)
                 except KeyError:
-                    LOG.warning(
+                    log.warning(
                         "OSD {0} is present in CRUSH map, but not in OSD map"
                     )
 

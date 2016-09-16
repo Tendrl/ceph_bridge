@@ -15,9 +15,9 @@ from tendrl.ceph_bridge.common.types import MonStatus
 from tendrl.ceph_bridge.common.types import OSD
 from tendrl.ceph_bridge.common.types import OsdMap
 from tendrl.ceph_bridge.common.types import ServiceId
+from tendrl.ceph_bridge import config
 from tendrl.ceph_bridge.gevent_util import nosleep
 from tendrl.ceph_bridge.log import log
-from tendrl.ceph_bridge.manager import config
 from tendrl.ceph_bridge.util import now
 
 import uuid
