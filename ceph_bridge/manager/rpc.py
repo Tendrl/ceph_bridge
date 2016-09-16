@@ -18,8 +18,8 @@ from tendrl.ceph_bridge.common.types import SERVER
 from tendrl.ceph_bridge.common.types import ServiceId
 from tendrl.ceph_bridge.common.types import SYNC_OBJECT_STR_TYPE
 
+from tendrl.ceph_bridge import config
 from tendrl.ceph_bridge.log import log
-from tendrl.ceph_bridge.manager import config
 
 import uuid
 

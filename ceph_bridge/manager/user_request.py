@@ -1,7 +1,7 @@
 
 from ceph_bridge import ceph
 
-from ceph_bridge.logging import LOG
+from ceph_bridge.log import log
 from ceph_bridge.types import OsdMap
 from ceph_bridge.types import PgSummary
 from ceph_bridge.types import USER_REQUEST_COMPLETE
@@ -78,7 +78,7 @@ class UserRequestBase(object):
 
         """
         # getChild isn't in 2.6
-        logname = '.'.join((LOG.name, self.__class__.__name__))
+        logname = '.'.join((log.name, self.__class__.__name__))
         self.log = logging.getLogger(logname)
         self.requested_at = now()
         self.completed_at = None
@@ -345,7 +345,7 @@ class PoolCreatingRequest(OsdMapModifyingRequest):
                         break
 
                 if self._pool_id is None:
-                    LOG.error("'{0}' not found, pools are {1}".format(
+                    log.error("'{0}' not found, pools are {1}".format(
                         self._pool_name, [
                             p['pool_name']
                             for p in osd_map.pools_by_id.values()]

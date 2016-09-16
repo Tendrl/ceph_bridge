@@ -9,8 +9,8 @@ try:
 except ImportError:
     msgpack = None
 
+from tendrl.ceph_bridge import config
 from tendrl.ceph_bridge.log import log
-from tendrl.ceph_bridge.manager import config
 from tendrl.ceph_bridge.persistence.sync_objects import SyncObject
 
 
