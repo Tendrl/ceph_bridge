@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = ceph_bridge
+omit = ceph_bridge/tests/*
 
 [report]
 ignore_errors = True
