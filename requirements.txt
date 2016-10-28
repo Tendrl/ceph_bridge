@@ -8,3 +8,5 @@ gevent>=1.0
 greenlet>=0.3.2
 msgpack-python
 pytz
+PyYAML
+systemd-python

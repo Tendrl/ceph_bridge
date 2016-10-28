@@ -169,7 +169,10 @@ def dump_stacks():
 
 
 def main():
-    log.setup_logging()
+    log.setup_logging(
+        config.get('ceph_bridge', 'log_cfg_path'),
+        config.get('ceph_bridge', 'log_level')
+    )
     m = Manager()
     m.start()
 
