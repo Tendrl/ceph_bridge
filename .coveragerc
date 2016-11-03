@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = tendrl.ceph_bridge
+omit = tendrl/ceph_bridge/tests/*
 
 [report]
 ignore_errors = True
