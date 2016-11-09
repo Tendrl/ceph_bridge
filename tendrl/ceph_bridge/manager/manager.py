@@ -7,13 +7,18 @@ import traceback
 import gevent.event
 import gevent.greenlet
 
+from tendrl.bridge_common import log
+
 from tendrl.ceph_bridge import ceph
-from tendrl.ceph_bridge import log
 from tendrl.ceph_bridge.manager.cluster_monitor import ClusterMonitor
 from tendrl.ceph_bridge.manager.eventer import Eventer
 from tendrl.ceph_bridge.manager.rpc import EtcdThread
 from tendrl.ceph_bridge.manager.server_monitor import ServerMonitor
 from tendrl.ceph_bridge.persistence.persister import Persister
+
+
+from tendrl.ceph_bridge.config import TendrlConfig
+config = TendrlConfig()
 
 
 LOG = logging.getLogger(__name__)
@@ -169,7 +174,10 @@ def dump_stacks():
 
 
 def main():
-    log.setup_logging()
+    log.setup_logging(
+        config.get('ceph_bridge', 'log_cfg_path'),
+        config.get('ceph_bridge', 'log_level')
+    )
     m = Manager()
     m.start()
 

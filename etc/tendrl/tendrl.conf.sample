@@ -13,7 +13,7 @@ log_level = DEBUG
 
 [ceph_bridge]
 # Path to log file
-log_path = /var/log/tendrl/ceph_bridge.log
+log_cfg_path = /etc/tendrl/logging.yaml
 log_level = DEBUG
 crush_host_type = host
 crush_osd_type = osd
