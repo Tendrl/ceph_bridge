@@ -1,5 +1,5 @@
 ============================================
- ceph_bridge Release Notes
+ ceph_integration Release Notes
 ============================================
 
 .. toctree::

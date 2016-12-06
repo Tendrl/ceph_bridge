@@ -1,13 +1,20 @@
-import setuptools
+from setuptools import find_packages
+from setuptools import setup
 
-# In python < 2.7.4, a lazy loading of package `pbr` will break
-# setuptools if some other modules registered functions in `atexit`.
-# solution from: http://bugs.python.org/issue15881#msg170215
-try:
-    import multiprocessing  # noqa
-except ImportError:
-    pass
-
-setuptools.setup(
-    setup_requires=['pbr'],
-    pbr=True)
+setup(
+    name="tendrl-ceph-integration",
+    version="1.1",
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*",
+                                    "tests"]),
+    namespace_packages=['tendrl'],
+    url="http://www.redhat.com",
+    author="Rohan Kanade.",
+    author_email="rkanade@redhat.com",
+    license="LGPL-2.1+",
+    zip_safe=False,
+    entry_points={
+        'console_scripts': ['tendrl-ceph-integration = '
+                            'tendrl.ceph_integration.manager.manager:main'
+                            ]
+    }
+)

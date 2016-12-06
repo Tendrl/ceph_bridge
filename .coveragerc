@@ -1,6 +1,7 @@
 [run]
 branch = True
-source = ceph_bridge
+source = tendrl.ceph_integration
+omit = tendrl/ceph_integration/tests/*
 
 [report]
 ignore_errors = True

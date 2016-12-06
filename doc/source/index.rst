@@ -1,9 +1,9 @@
-.. ceph_bridge documentation master file, created by
+.. ceph_integration documentation master file, created by
    sphinx-quickstart on Tue Jul  9 22:26:36 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ceph_bridge's documentation!
+Welcome to ceph_integration's documentation!
 ========================================================
 
 Contents:

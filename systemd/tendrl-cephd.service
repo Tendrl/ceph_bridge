@@ -1,0 +1,13 @@
+[Unit]
+Description=Tendrl ceph integration to manage ceph storage system
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tendrl-ceph-integration
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use ceph_bridge in a project::
+To use ceph_integration in a project::
 
-    import ceph_bridge
+    import ceph_integration

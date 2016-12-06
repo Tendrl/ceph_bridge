@@ -1,6 +1,11 @@
+include LICENSE
 include AUTHORS
 include ChangeLog
 exclude .gitignore
 exclude .gitreview
-
+graft systemd
+graft config
+graft docs
+graft etc
+graft tendrl
 global-exclude *.pyc

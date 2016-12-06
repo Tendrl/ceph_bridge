@@ -1,15 +1,15 @@
 ===============================
-ceph_bridge
+ceph_integration
 ===============================
 
-Tendrl bridge for Ceph Storage
+Tendrl integration for Ceph Storage
 
 Long description TODO (rk).
 
 * Free software: LGPL2.1
 * Documentation: TODO (rk)
-* Source: https://github.com/Tendrl/ceph_bridge
-* Bugs: https://github.com/Tendrl/ceph_bridge/issues
+* Source: https://github.com/Tendrl/ceph_integration
+* Bugs: https://github.com/Tendrl/ceph_integration/issues
 
 Features
 --------
@@ -19,14 +19,14 @@ Features
 Builds
 ------
 
-.. image:: https://travis-ci.org/Tendrl/ceph_bridge.svg?branch=master
-    :target: https://travis-ci.org/Tendrl/ceph_bridge
+.. image:: https://travis-ci.org/Tendrl/ceph_integration.svg?branch=master
+    :target: https://travis-ci.org/Tendrl/ceph_integration
 
 Code Coverage
 -------------
 
-.. image:: https://coveralls.io/repos/github/Tendrl/ceph_bridge/badge.svg?branch=master
-    :target: https://coveralls.io/github/Tendrl/ceph_bridge?branch=master
+.. image:: https://coveralls.io/repos/github/Tendrl/ceph_integration/badge.svg?branch=master
+    :target: https://coveralls.io/github/Tendrl/ceph_integration?branch=master
 
 Developer/Install documentation
 -----------------------
