@@ -130,7 +130,8 @@ class EtcdRPC(object):
     def extract_flow_details(self, flow_name, definitions):
         namespace = flow_name.split(".flows.")[0]
         flow = definitions[namespace]['flows'][flow_name.split(".")[-1]]
-        return flow['atoms'], flow['pre_run'], flow['post_run'], flow['uuid']
+        return flow['atoms'], flow.get('pre_run', []),\
+            flow.get('post_run', []), flow['uuid']
 
 
 class EtcdThread(gevent.greenlet.Greenlet):
