@@ -2,7 +2,6 @@ import gc
 import greenlet
 import logging
 import signal
-import sys
 import traceback
 
 import gevent.event
@@ -198,13 +197,13 @@ def main():
         config.get('ceph_integration', 'log_cfg_path'),
         config.get('ceph_integration', 'log_level')
     )
-    if sys.argv:
-        if len(sys.argv) > 1:
-            if "cluster-id" in sys.argv[1]:
-                cluster_id = sys.argv[2]
-                utils.set_tendrl_context(cluster_id)
 
-    m = Manager(utils.get_tendrl_context())
+    cluster_id = utils.get_tendrl_context()
+    if not cluster_id:
+        LOG.error("Could not find cluster_id")
+        exit(1)
+
+    m = Manager(cluster_id)
     m.start()
 
     complete = gevent.event.Event()
