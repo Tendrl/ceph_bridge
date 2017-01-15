@@ -33,8 +33,8 @@ from tendrl.ceph_integration.util import now
 
 config = TendrlConfig()
 
-CRUSH_HOST_TYPE = config.get('ceph_integration', 'crush_host_type')
-CRUSH_OSD_TYPE = config.get('ceph_integration', 'crush_osd_type')
+CRUSH_HOST_TYPE = config.get('ceph-integration', 'crush_host_type')
+CRUSH_OSD_TYPE = config.get('ceph-integration', 'crush_osd_type')
 
 # Ignore changes in boot time below this threshold, to avoid mistaking clock
 # adjustments for reboots.

@@ -11,7 +11,7 @@ log_cfg_path = /etc/tendrl/common_logging.yaml
 log_level = DEBUG
 
 
-[ceph_integration]
+[ceph-integration]
 # Path to log file
 log_cfg_path = /etc/tendrl/logging.yaml
 log_level = DEBUG

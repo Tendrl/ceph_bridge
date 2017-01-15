@@ -4,14 +4,14 @@ Status
 Builds
 ------
 
-.. image:: https://travis-ci.org/Tendrl/ceph_integration.svg?branch=master
-    :target: https://travis-ci.org/Tendrl/ceph_integration
+.. image:: https://travis-ci.org/Tendrl/ceph-integration.svg?branch=master
+    :target: https://travis-ci.org/Tendrl/ceph-integration
 
 Code Coverage
 -------------
 
-.. image:: https://coveralls.io/repos/github/Tendrl/ceph_integration/badge.svg?branch=master
-    :target: https://coveralls.io/github/Tendrl/ceph_integration?branch=master
+.. image:: https://coveralls.io/repos/github/Tendrl/ceph-integration/badge.svg?branch=master
+    :target: https://coveralls.io/github/Tendrl/ceph-integration?branch=master
 
 
 Testing
@@ -72,14 +72,14 @@ To run functional tests locally::
   $ tox -e functional
 
 Tendrl CI scripts
-----------------
+-----------------
 
 *Files: /tests/ci/**
 
 This directory contains scripts and files related to the Tendrl CI system.
 
 Tendrl Style Commandments
-------------------------
+-------------------------
 
 *File: /tests/hacking/checks.py*
 

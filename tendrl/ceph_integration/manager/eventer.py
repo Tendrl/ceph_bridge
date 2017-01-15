@@ -40,9 +40,9 @@ GRACE_PERIOD = 30
 # How long must a [server|cluster] be out of contact before
 # we generate an event?
 CONTACT_THRESHOLD_FACTOR = int(config.get(
-    'ceph_integration', 'server_timeout_factor'))  # multiple of contact period
+    'ceph-integration', 'server_timeout_factor'))  # multiple of contact period
 CLUSTER_CONTACT_THRESHOLD = int(config.get(
-    'ceph_integration', 'cluster_contact_threshold'))  # in seconds
+    'ceph-integration', 'cluster_contact_threshold'))  # in seconds
 
 
 class Eventer(gevent.greenlet.Greenlet):

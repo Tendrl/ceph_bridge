@@ -14,10 +14,6 @@ from tendrl.ceph_integration.types import SERVER
 from tendrl.ceph_integration.types import ServiceId
 from tendrl.ceph_integration.types import SYNC_OBJECT_STR_TYPE
 
-from tendrl.ceph_integration.config import TendrlConfig
-
-
-config = TendrlConfig()
 LOG = logging.getLogger(__name__)
 
 

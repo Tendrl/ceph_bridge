@@ -42,7 +42,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ceph_integration Release Notes'
+project = u'ceph-integration Release Notes'
 copyright = u'2016, Tendrl Project'
 
 # The version info for the project you're documenting, acts as replacement for

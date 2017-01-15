@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = tendrl.ceph_integration
+source = ceph_integration
 omit = tendrl/ceph_integration/tests/*
 
 [report]

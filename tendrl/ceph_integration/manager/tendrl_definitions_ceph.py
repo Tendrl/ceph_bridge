@@ -4,8 +4,8 @@ namespace.tendrl.ceph_integration:
   flows:
     CreatePool:
       atoms:
-        - tendrl.ceph_integration.objects.pool.atoms.create
-      description: "Create Ceph Pool"
+        - tendrl.ceph_integration.objects.Pool.atoms.create
+      help: "Create Ceph Pool"
       enabled: true
       inputs:
         mandatory:
@@ -18,21 +18,6 @@ namespace.tendrl.ceph_integration:
       run: tendrl.ceph_integration.flows.create_pool.CreatePool
       type: Create
       uuid: faeab231-69e9-4c9d-b5ef-a67ed057f98b
-      version: 1
-    DeletePool:
-      atoms:
-        - tendrl.ceph_integration.objects.pool.atoms.delete
-      description: "Delete Ceph Pool"
-      enabled: true
-      inputs:
-        mandatory:
-          - Pool.pool_id
-          - Tendrl_context.sds_name
-          - Tendrl_context.sds_version
-          - Tendrl_context.cluster_id
-      run: tendrl.ceph_integration.flows.delete_pool.DeletePool
-      type: Delete
-      uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
       version: 1
   objects:
     Pool:
@@ -49,7 +34,7 @@ namespace.tendrl.ceph_integration:
               - Pool.max_bytes
               - Pool.ec_profile
           name: "Create Pool"
-          run: tendrl.ceph_integration.objects.pool.atoms.create.Create
+          run: tendrl.ceph_integration.objects.Pool.atoms.create.Create
           type: Create
           uuid: bd0155a8-ff15-42ff-9c76-5176f53c13e0
         delete:
@@ -58,9 +43,25 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.pool_id
           name: "Delete Pool"
-          run: tendrl.ceph_integration.objects.pool.atoms.delete.Delete
+          run: tendrl.ceph_integration.objects.Pool.atoms.delete.Delete
           type: Delete
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3720
+      flows:
+        DeletePool:
+          atoms:
+            - tendrl.ceph_integration.objects.Pool.atoms.delete
+          help: "Delete Ceph Pool"
+          enabled: true
+          inputs:
+            mandatory:
+              - Pool.pool_id
+              - Tendrl_context.sds_name
+              - Tendrl_context.sds_version
+              - Tendrl_context.cluster_id
+          run: tendrl.ceph_integration.objects.Pool.flows.delete_pool.DeletePool
+          type: Delete
+          uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
+          version: 1
       attrs:
         crush_ruleset:
           help: "The ID of a CRUSH ruleset to use for this pool. The specified ruleset must exist."

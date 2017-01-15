@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_ceph_integration
+test_ceph-integration
 ----------------------------------
 
-Tests for `ceph_integration` module.
+Tests for `ceph-integration` module.
 """
 
 from tendrl.ceph_integration.tests import base

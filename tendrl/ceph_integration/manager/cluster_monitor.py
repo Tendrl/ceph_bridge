@@ -8,7 +8,6 @@ from pytz import utc
 
 
 from tendrl.ceph_integration import ceph
-from tendrl.ceph_integration.config import TendrlConfig
 from tendrl.ceph_integration.gevent_util import nosleep
 from tendrl.ceph_integration.gevent_util import nosleep_mgr
 from tendrl.ceph_integration.manager.crush_node_request_factory \
@@ -28,12 +27,6 @@ from tendrl.ceph_integration.util import now
 
 from tendrl.ceph_integration.manager.pool_request_factory import \
     PoolRequestFactory
-
-
-config = TendrlConfig()
-LOG = logging.getLogger(__name__)
-FAVORITE_TIMEOUT_FACTOR = int(config.get('ceph_integration',
-                                         'favorite_timeout_factor'))
 
 LOG = logging.getLogger(__name__)
 
@@ -350,14 +343,21 @@ class ClusterMonitor(gevent.greenlet.Greenlet):
                 ) else None,
                 now(), sync_object, self._manager.cluster_id)
             if sync_type.str == "osd_map":
+                util_data = self._get_utilization_data()
                 for raw_pool in sync_object.get('pools', []):
                     LOG.info("Updating Pool %s" % raw_pool['pool_name'])
+                    for pool in util_data['pools']:
+                        if pool['name'] == raw_pool['pool_name']:
+                            pool_used = pool['used']
+                            pcnt = pool['pcnt_used']
                     pool = Pool(updated=str(time.time()),
                                 cluster_id=self._manager.cluster_id,
                                 pool_id=raw_pool['pool'],
                                 poolname=raw_pool['pool_name'],
                                 pg_num=raw_pool['pg_num'],
-                                min_size=raw_pool['min_size']
+                                min_size=raw_pool['min_size'],
+                                used=pool_used,
+                                percent_used=pcnt
                                 )
                     self._persister.update_pool(pool)
         else:
@@ -365,6 +365,142 @@ class ClusterMonitor(gevent.greenlet.Greenlet):
                 "ClusterMonitor.on_sync_object: stale object"
                 " received for %s" % data['type']
             )
+
+    def _get_utilization_data(self):
+        from ceph_argparse import json_command
+        import rados
+        cluster_handle = rados.Rados(
+            name=ceph.RADOS_NAME,
+            clustername=self.name,
+            conffile=''
+        )
+        cluster_handle.connect()
+        prefix = 'df'
+        ret, outbuf, outs = json_command(
+            cluster_handle,
+            prefix=prefix,
+            argdict={},
+            timeout=ceph.RADOS_TIMEOUT
+        )
+        if ret != 0:
+            raise rados.Error(outs)
+        else:
+            outbuf = outbuf.replace('RAW USED', 'RAW_USED')
+            outbuf = outbuf.replace('%RAW USED', '%RAW_USED')
+            outbuf = outbuf.replace('MAX AVAIL', 'MAX_AVAIL')
+            lines = outbuf.split('\n')
+            index = 0
+            cluster_stat = {}
+            pool_stat = []
+            pool_stat_available = False
+            while index < len(lines):
+                line = lines[index]
+                if line == "" or line == '\n':
+                    index += 1
+                    continue
+                if "GLOBAL" in line:
+                    index += 1
+                    if len(lines) < 3:
+                        raise rados.Error("Failed to parse pool stats data")
+                    cluster_fields = lines[index].split()
+                    cluster_size_idx = self._idx_in_list(
+                        cluster_fields,
+                        'SIZE'
+                    )
+                    cluster_avail_idx = self._idx_in_list(
+                        cluster_fields,
+                        'AVAIL'
+                    )
+                    cluster_used_idx = self._idx_in_list(
+                        cluster_fields,
+                        'RAW_USED'
+                    )
+                    cluster_pcnt_used_idx = self._idx_in_list(
+                        cluster_fields,
+                        '%RAW_USED'
+                    )
+                    if cluster_size_idx == -1 or cluster_avail_idx == -1 or \
+                        cluster_used_idx == -1 or cluster_pcnt_used_idx == -1:
+                        raise rados.Error("Missing fields in cluster stat")
+                    index += 1
+                    if index >= len(lines):
+                        raise rados.Error("No cluster stats to parse")
+                    line = lines[index]
+                    cluster_fields = line.split()
+                    if len(cluster_fields) < 4:
+                        raise rados.Error("Missing fields in cluster stat")
+                    cluster_stat['total'] = self._to_bytes(
+                        cluster_fields[cluster_size_idx]
+                    )
+                    cluster_stat['used'] = self._to_bytes(
+                        cluster_fields[cluster_used_idx]
+                    )
+                    cluster_stat['available'] = self._to_bytes(
+                        cluster_fields[cluster_avail_idx]
+                    )
+                    cluster_stat['pcnt_used'] = cluster_fields[
+                        cluster_pcnt_used_idx
+                    ]
+                if "POOLS" in line:
+                    pool_stat_available = True
+                    index += 1
+                    if index >= len(lines):
+                        raise rados.Error("No pool stats to parse")
+                    pool_fields = lines[index].split()
+                    pool_name_idx = self._idx_in_list(pool_fields, 'NAME')
+                    pool_id_idx = self._idx_in_list(pool_fields, 'ID')
+                    pool_used_idx = self._idx_in_list(pool_fields, 'USED')
+                    pool_pcnt_used_idx = self._idx_in_list(
+                        pool_fields,
+                        '%USED'
+                    )
+                    pool_max_avail_idx = self._idx_in_list(
+                        pool_fields,
+                        'MAX_AVAIL'
+                    )
+                    if pool_name_idx == -1 or pool_id_idx == -1 or \
+                        pool_used_idx == -1 or pool_pcnt_used_idx == -1 or \
+                        pool_max_avail_idx == -1:
+                        raise rados.Error("Missing fields in pool stat")
+                    index += 1
+                if pool_stat_available:
+                    line = lines[index]
+                    pool_fields = line.split()
+                    if len(pool_fields) < 5:
+                        raise rados.Error("Missing fields in pool stat")
+                    dict = {}
+                    dict['name'] = pool_fields[pool_name_idx]
+                    dict['available'] = self._to_bytes(
+                        pool_fields[pool_max_avail_idx]
+                    )
+                    dict['used'] = self._to_bytes(
+                        pool_fields[pool_used_idx]
+                    )
+                    dict['pcnt_used'] = pool_fields[pool_pcnt_used_idx]
+                    pool_stat.append(dict)
+                index += 1
+            return {'cluster': cluster_stat, 'pools': pool_stat}
+
+    def _idx_in_list(self, list, str):
+        idx = -1
+        for item in list:
+            idx += 1
+            if item == str:
+                return idx
+        return -1
+
+    def _to_bytes(self, str):
+        if str.endswith('K') or str.endswith('k'):
+            return int(str[:-1]) * 1024
+        if str.endswith('M') or str.endswith('m'):
+            return int(str[:-1]) * 1024 * 1024
+        if str.endswith('G') or str.endswith('g'):
+            return int(str[:-1]) * 1024 * 1024 * 1024
+        if str.endswith('T') or str.endswith('t'):
+            return int(str[:-1]) * 1024 * 1024 * 1024 * 1024
+        if str.endswith('P') or str.endswith('p'):
+            return int(str[:-1]) * 1024 * 1024 * 1024 * 1024 * 1024
+        return int(str)
 
     def _request(self, method, obj_type, *args, **kwargs):
         """Create and submit UserRequest for an apply, create, update or delete.

@@ -1,6 +1,6 @@
 ===============================
-ceph_integration
-===============================
+ceph-integration
+================
 
 Tendrl integration for Ceph Storage
 
@@ -38,3 +38,4 @@ We also have sphinx documentation in ``docs/source``.
 ::
 
     $ python setup.py build_sphinx
+
