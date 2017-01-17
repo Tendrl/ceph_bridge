@@ -6,6 +6,9 @@ namespace.tendrl.ceph_integration:
       atoms:
         - tendrl.ceph_integration.objects.Pool.atoms.create
       help: "Create Ceph Pool"
+      preferred_tags:
+        - "tendrl/integration/ceph"
+        - "ceph/mon"
       enabled: true
       inputs:
         mandatory:
@@ -51,6 +54,9 @@ namespace.tendrl.ceph_integration:
           atoms:
             - tendrl.ceph_integration.objects.Pool.atoms.delete
           help: "Delete Ceph Pool"
+          preferred_tags:
+            - "tendrl/integration/ceph"
+            - "ceph/mon"
           enabled: true
           inputs:
             mandatory:

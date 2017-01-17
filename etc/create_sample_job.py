@@ -7,8 +7,12 @@ job_id1 = str(uuid.uuid4())
 
 job = {
     "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
-    "run": "tendrl.gluster_integration.flows.create.CreatePool",
+    "run": "tendrl.ceph_integration.flows.create.CreatePool",
     "status": 'new',
+    "targeted_tags": [  # refer this field from the flow definition file
+        "ceph/mon",
+        "tendrl/integration/ceph"
+    ],
     "parameters": {
         "Pool.poolname": 'test',
         "Pool.pg_num": 1,
