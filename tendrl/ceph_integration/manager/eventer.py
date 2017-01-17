@@ -13,7 +13,6 @@ from tendrl.ceph_integration.persistence.event import RECOVERY
 from tendrl.ceph_integration.persistence.event import severity_str
 from tendrl.ceph_integration.persistence.event import WARNING
 
-from tendrl.ceph_integration.config import TendrlConfig
 from tendrl.ceph_integration.gevent_util import nosleep
 from tendrl.ceph_integration.types import Health
 from tendrl.ceph_integration.types import MDS
@@ -23,9 +22,14 @@ from tendrl.ceph_integration.types import OSD
 from tendrl.ceph_integration.types import OsdMap
 from tendrl.ceph_integration.types import ServiceId
 from tendrl.ceph_integration.util import now
+from tendrl.commons.config import load_config
 
 
-config = TendrlConfig()
+config = load_config(
+    "ceph-integration",
+    "/etc/tendrl/ceph-integration/ceph-integration.yaml"
+)
+
 LOG = logging.getLogger(__name__)
 
 # The tick handler is very cheap (no I/O) so we call
@@ -39,10 +43,12 @@ GRACE_PERIOD = 30
 
 # How long must a [server|cluster] be out of contact before
 # we generate an event?
-CONTACT_THRESHOLD_FACTOR = int(config.get(
-    'ceph-integration', 'server_timeout_factor'))  # multiple of contact period
-CLUSTER_CONTACT_THRESHOLD = int(config.get(
-    'ceph-integration', 'cluster_contact_threshold'))  # in seconds
+CONTACT_THRESHOLD_FACTOR = int(
+    config['configuration']['server_timeout_factor']
+)  # multiple of contact period
+CLUSTER_CONTACT_THRESHOLD = int(
+    config['configuration']['cluster_contact_threshold']
+)  # in seconds
 
 
 class Eventer(gevent.greenlet.Greenlet):

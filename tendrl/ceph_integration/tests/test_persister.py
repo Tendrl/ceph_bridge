@@ -2,6 +2,7 @@ from mock import MagicMock
 import sys
 sys.modules['tendrl.commons.config'] = MagicMock()
 from tendrl.ceph_integration.persistence import persister
+del sys.modules['tendrl.commons.config']
 
 
 class Test_Persister(object):

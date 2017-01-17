@@ -1,11 +1,16 @@
 from tendrl.ceph_integration.persistence.sync_objects import SyncObject
+from tendrl.commons.etcdobj.etcdobj import Server as etcd_server
 from tendrl.commons.persistence.etcd_persister import EtcdPersister
 
 
 class CephIntegrationEtcdPersister(EtcdPersister):
     def __init__(self, config):
-        super(CephIntegrationEtcdPersister, self).__init__(config)
-        self._store = self.get_store()
+        etcd_kwargs = {
+            'port': int(config["configuration"]["etcd_port"]),
+            'host': config["configuration"]["etcd_connection"]
+        }
+        self._store = etcd_server(etcd_kwargs=etcd_kwargs)
+        super(CephIntegrationEtcdPersister, self).__init__(self._store.client)
 
     def update_sync_object(
         self,

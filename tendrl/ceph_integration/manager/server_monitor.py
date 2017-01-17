@@ -21,7 +21,6 @@ from gevent import event
 from gevent import greenlet
 
 from tendrl.ceph_integration import ceph
-from tendrl.ceph_integration.config import TendrlConfig
 from tendrl.ceph_integration.gevent_util import nosleep
 from tendrl.ceph_integration.persistence.servers import Server
 from tendrl.ceph_integration.persistence.servers import Service
@@ -29,12 +28,16 @@ from tendrl.ceph_integration.types import MonMap
 from tendrl.ceph_integration.types import OsdMap
 from tendrl.ceph_integration.types import ServiceId
 from tendrl.ceph_integration.util import now
+from tendrl.commons.config import load_config
 
 
-config = TendrlConfig()
+config = load_config(
+    "ceph-integration",
+    "/etc/tendrl/ceph-integration/ceph-integration.yaml"
+)
 
-CRUSH_HOST_TYPE = config.get('ceph-integration', 'crush_host_type')
-CRUSH_OSD_TYPE = config.get('ceph-integration', 'crush_osd_type')
+CRUSH_HOST_TYPE = config['configuration']['crush_host_type']
+CRUSH_OSD_TYPE = config['configuration']['crush_osd_type']
 
 # Ignore changes in boot time below this threshold, to avoid mistaking clock
 # adjustments for reboots.
