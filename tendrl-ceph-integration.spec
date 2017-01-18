@@ -39,18 +39,18 @@ rm -rf %{name}.egg-info
 install -m  0755 --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/ceph_integration
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/ceph_integration
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/ceph_integration
-install -p -D -m 0644 systemd/tendrl-cephd.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-cephd.service
+install -p -D -m 0644 systemd/tendrl-ceph-integration.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-ceph-integration.service
 install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/ceph_integration_logging.yaml
 install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/ceph_integration/.
 
 %post
-%systemd_post tendrl-cephd.service
+%systemd_post tendrl-ceph-integration.service
 
 %preun
-%systemd_preun tendrl-cephd.service
+%systemd_preun tendrl-ceph-integration.service
 
 %postun
-%systemd_postun_with_restart tendrl-cephd.service
+%systemd_postun_with_restart tendrl-ceph-integration.service
 
 %check
 py.test -v tendrl/ceph_integration/tests || :
@@ -62,7 +62,7 @@ py.test -v tendrl/ceph_integration/tests || :
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/ceph_integration/
-%{_unitdir}/tendrl-cephd.service
+%{_unitdir}/tendrl-ceph-integration.service
 %{_sysconfdir}/tendrl/ceph_integration_logging.yaml
 
 %changelog
