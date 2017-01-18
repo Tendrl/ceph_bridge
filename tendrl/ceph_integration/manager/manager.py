@@ -78,6 +78,7 @@ class CephIntegrationManager(Manager):
         ).__init__(
             "sds",
             cluster_id,
+            utils.get_node_context(),
             config,
             CephIntegrationSyncStateThread(self, cluster_id),
             CephIntegrationEtcdPersister(config),
