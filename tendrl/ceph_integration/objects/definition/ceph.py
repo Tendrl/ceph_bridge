@@ -12,9 +12,9 @@ namespace.tendrl.ceph_integration:
           - Pool.poolname
           - Pool.pg_num
           - Pool.min_size
-          - Tendrl_context.sds_name
-          - Tendrl_context.sds_version
-          - Tendrl_context.cluster_id
+          - TendrlContext.sds_name
+          - TendrlContext.sds_version
+          - TendrlContext.integration_id
       run: tendrl.ceph_integration.flows.create_pool.CreatePool
       type: Create
       uuid: faeab231-69e9-4c9d-b5ef-a67ed057f98b
@@ -65,9 +65,9 @@ namespace.tendrl.ceph_integration:
           inputs:
             mandatory:
               - Pool.pool_id
-              - Tendrl_context.sds_name
-              - Tendrl_context.sds_version
-              - Tendrl_context.cluster_id
+              - TendrlContext.sds_name
+              - TendrlContext.sds_version
+              - TendrlContext.integration_id
           run: tendrl.ceph_integration.objects.pool.flows.delete_pool.DeletePool
           type: Delete
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
@@ -110,7 +110,7 @@ namespace.tendrl.ceph_integration:
           type: Integer
       help: "Pool"
       enabled: true
-      value: clusters/$Tendrl_context.cluster_id/maps/osd_map/data
+      value: clusters/$TendrlContext.integration_id/maps/osd_map/data
     TendrlContext:
       attrs:
         integration_id:
@@ -124,6 +124,29 @@ namespace.tendrl.ceph_integration:
           type: String
       help: "Tendrl Context "
       enabled: true
-      value: clusters/$Tendrl_context.cluster_id/Tendrl_context/
+      value: clusters/$TendrlContext.integration_id/TendrlContext/
+    SyncObject:
+      attrs:
+        fsid:
+          help: "Tendrl managed/generated cluster id for the sds being managed by Tendrl"
+          type: String
+        cluster_name:
+          help: gluster|ceph
+          type: String
+        sync_type:
+          help: "Sync Type eg: Mon Map, OSD Map etc"
+          type: String
+        version:
+          help: "version of sync type eg: 1.2.3"
+          type: String
+        when:
+          help: "time of data collection"
+          type: String
+        data:
+          help: "Sync data"
+          type: String
+      help: "Cluster sync data "
+      enabled: true
+      value: clusters/$TendrlContext.integration_id/maps/$SyncObject.sync_type
 tendrl_schema_version: 0.3
 """

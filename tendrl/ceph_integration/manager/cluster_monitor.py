@@ -335,8 +335,7 @@ class ClusterMonitor(gevent.greenlet.Greenlet):
                 self.fsid, self.name, sync_type.str,
                 new_object.version if isinstance(
                     new_object.version, int
-                ) else None, now(), sync_object,
-                str(time.time())
+                ) else None, now(), sync_object
             )
             tendrl_ns.central_store_thread.save_syncobject(
                 s_object

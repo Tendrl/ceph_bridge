@@ -9,7 +9,7 @@ class Delete(objects.CephIntegrationBaseAtom):
         self.obj = objects.Pool
 
     def run(self, parameters):
-        cluster_id = parameters['Tendrl_context.cluster_id']
+        cluster_id = parameters['Tendrl_context.integration_id']
         pool_id = parameters['Pool.pool_id']
         fsid = manager_utils.get_fsid()
         crud = Crud(parameters['manager'])

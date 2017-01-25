@@ -4,9 +4,9 @@ import os.path
 import subprocess
 
 LOG = logging.getLogger(__name__)
-TENDRL_CONTEXT = "/etc/tendrl/ceph-integration/tendrl_context"
+TENDRL_CONTEXT = "/etc/tendrl/gluster-integration/integration_id"
 FSID = "/etc/tendrl/ceph-integration/fsid"
-NODE_CONTEXT = "/etc/tendrl/node_agent/node_context"
+NODE_CONTEXT = "/etc/tendrl/node-agent/NodeContext"
 
 
 def get_tendrl_context():

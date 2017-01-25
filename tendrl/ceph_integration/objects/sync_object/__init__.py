@@ -27,5 +27,5 @@ class _SyncObject(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.cluster_id, self.sync_type)
+            (tendrl_ns.tendrl_context.integration_id, self.sync_type)
         return super(_SyncObject, self).render()

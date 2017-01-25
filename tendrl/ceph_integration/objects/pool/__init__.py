@@ -26,5 +26,5 @@ class _Pool(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.cluster_id, self.pool_id)
+            (tendrl_ns.tendrl_context.integration_id, self.pool_id)
         return super(_Pool, self).render()
