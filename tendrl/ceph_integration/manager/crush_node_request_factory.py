@@ -1,12 +1,12 @@
 import json
-import logging
 
 from tendrl.ceph_integration.manager.request_factory import RequestFactory
 from tendrl.ceph_integration.manager.user_request import OsdMapModifyingRequest
 from tendrl.ceph_integration.types import BucketNotEmptyError
 from tendrl.ceph_integration.types import OsdMap
-
-LOG = logging.getLogger(__name__)
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
 
 class CrushNodeRequestFactory(RequestFactory):
@@ -48,8 +48,17 @@ class CrushNodeRequestFactory(RequestFactory):
                 'name'] or bucket_type != current_node['type_name']:
             commands.append(remove_bucket(current_node['name'], None))
 
-        LOG.info("Updating CRUSH node {c} parent {p} version {v}".format(
-            c=commands, p=parent, v=self.osd_map.version))
+        try:
+            payload = {"message": "Updating CRUSH node {c} parent {p} "
+                       "version {v}".format(c=commands,
+                                            p=parent,
+                                            v=self.osd_map.version)}
+            event.Event(Message(Message.priorities.INFO,
+                                Message.publishers.CEPH_INTEGRATION,
+                                payload))
+        except event.EventFailed:
+            print(traceback.format_exc())
+
         message = "Updating CRUSH node in {cluster_name}".format(
             cluster_name=self._cluster_monitor.name)
         return OsdMapModifyingRequest(

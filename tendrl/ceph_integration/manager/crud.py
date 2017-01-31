@@ -1,5 +1,3 @@
-import logging
-
 from tendrl.ceph_integration.types import CLUSTER
 from tendrl.ceph_integration.types import CRUSH_MAP
 from tendrl.ceph_integration.types import CRUSH_NODE
@@ -13,8 +11,9 @@ from tendrl.ceph_integration.types import POOL
 from tendrl.ceph_integration.types import SERVER
 from tendrl.ceph_integration.types import ServiceId
 from tendrl.ceph_integration.types import SYNC_OBJECT_STR_TYPE
-
-LOG = logging.getLogger(__name__)
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
 
 class Crud(object):
@@ -32,13 +31,31 @@ class Crud(object):
             attr = object.__getattribute__(self, item)
             if callable(attr):
                 def wrap(*args, **kwargs):
-                    LOG.debug("Crud >> %s(%s, %s)" %
-                              (item, args, kwargs))
+                    try:
+                        event.Event(Message(
+                            Message.priorities.DEBUG,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "Crud >> %s(%s, %s)" %
+                                (item, args, kwargs)}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
                     try:
                         rc = attr(*args, **kwargs)
-                        LOG.debug("Crud << %s" % item)
+                        try:
+                            event.Event(Message(
+                                Message.priorities.DEBUG,
+                                Message.publishers.CEPH_INTEGRATION,
+                                {"message": "Crud << %s" % item}))
+                        except event.EventFailed:
+                            print(traceback.format_exc())
                     except Exception:
-                        LOG.exception("Crud !! %s" % item)
+                        try:
+                            event.Event(Message(
+                                Message.priorities.WARNING,
+                                Message.publishers.CEPH_INTEGRATION,
+                                {"message": "Crud !! %s" % item}))
+                        except event.EventFailed:
+                            print(traceback.format_exc())
                         raise
                     return rc
                 return wrap
@@ -131,8 +148,14 @@ class Crud(object):
                     else:
                         obj = getattr(obj, part)
             except (AttributeError, KeyError) as e:
-                LOG.exception("Exception %s traversing %s: obj=%s" %
-                              (e, path, obj))
+                try:
+                    event.Event(Message(
+                        Message.priorities.INFO,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "Exception %s traversing %s: obj=%s" %
+                                    (e, path, obj)}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
                 raise NotFound(object_type, path)
             return obj
         else:

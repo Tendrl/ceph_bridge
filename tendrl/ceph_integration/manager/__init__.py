@@ -1,14 +1,12 @@
-import logging
-
 import gevent.event
 import signal
 
-from tendrl.commons import manager
-from tendrl.ceph_integration import sds_sync
 from tendrl.ceph_integration import central_store
-
-
-LOG = logging.getLogger(__name__)
+from tendrl.ceph_integration import sds_sync
+from tendrl.commons import event
+from tendrl.commons import manager
+from tendrl.commons.message import Message
+import traceback
 
 
 class CephIntegrationManager(manager.Manager):
@@ -39,7 +37,13 @@ def main():
     complete = gevent.event.Event()
 
     def shutdown():
-        LOG.info("Signal handler: stopping")
+        try:
+            payload = {"message": "Signal handler: stopping"}
+            event.Event(Message(Message.priorities.INFO,
+                                Message.publishers.CEPH_INTEGRATION,
+                                payload))
+        except event.EventFailed:
+            print(traceback.format_exc())
         complete.set()
 
     gevent.signal(signal.SIGTERM, shutdown)
