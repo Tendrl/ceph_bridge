@@ -1,12 +1,12 @@
-import logging
-
 import datetime
+
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
 from tendrl.ceph_integration import ceph
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES
 from tendrl.ceph_integration.util import now
-
-LOG = logging.getLogger(__name__)
 
 
 class SyncObjects(object):
@@ -55,46 +55,82 @@ class SyncObjects(object):
         I may choose to initiate RPC to retrieve the map
 
         """
-        LOG.debug(
-            "SyncObjects.on_version %s/%s" % (sync_type.str, new_version)
-        )
+        try:
+            event.Event(Message(
+                Message.priorities.DEBUG,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "SyncObjects.on_version %s/%s" %
+                 (sync_type.str, new_version)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         old_version = self.get_version(sync_type)
         if sync_type.cmp(new_version, old_version) > 0:
             known_version = self._known_versions[sync_type]
             if sync_type.cmp(new_version, known_version) > 0:
                 # We are out of date: request an up to date copy
-                LOG.info("Advanced known version %s/%s %s->%s" % (
-                    self._cluster_name, sync_type.str, known_version,
-                    new_version))
+                try:
+                    event.Event(Message(
+                        Message.priorities.INFO,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "Advanced known version %s/%s %s->%s" % (
+                            self._cluster_name, sync_type.str, known_version,
+                            new_version)}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
                 self._known_versions[sync_type] = new_version
             else:
-                LOG.info(
-                    "on_version: %s is newer than %s" % (
-                        new_version, old_version
-                    )
-                )
+                try:
+                    event.Event(Message(
+                        Message.priorities.INFO,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "on_version: %s is newer than %s" % (
+                            new_version, old_version)}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
 
             # If we already have a request out for this type of map,
             # then consider cancelling it if we've already waited for
             # a while.
             if self._fetching_at[sync_type] is not None:
                 if now() - self._fetching_at[sync_type] < self.FETCH_TIMEOUT:
-                    LOG.info("Fetch already underway for %s" % sync_type.str)
+                    try:
+                        event.Event(Message(
+                            Message.priorities.INFO,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "Fetch already underway for %s" %
+                             sync_type.str}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
                     return
                 else:
-                    LOG.warn("Abandoning fetch for %s started at %s" % (
-                        sync_type.str, self._fetching_at[sync_type]))
+                    try:
+                        event.Event(Message(
+                            Message.priorities.WARNING,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "Abandoning fetch for %s started at %s"
+                             % (sync_type.str, self._fetching_at[sync_type])}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
 
-            LOG.info(
-                "on_version: fetching %s/%s , "
-                "currently got %s, know %s" % (
-                    sync_type, new_version, old_version, known_version
-                )
-            )
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "on_version: fetching %s/%s , "
+                     "currently got %s, know %s" % (
+                         sync_type, new_version, old_version, known_version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             return self.fetch(sync_type)
 
     def fetch(self, sync_type):
-        LOG.debug("SyncObjects.fetch: %s" % sync_type)
+        try:
+            event.Event(Message(
+                Message.priorities.DEBUG,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "SyncObjects.fetch: %s" % sync_type}))
+        except event.EventFailed:
+            print(traceback.format_exc())
 
         self._fetching_at[sync_type] = now()
         # TODO(Rohan) clean up unused 'since' argument
@@ -105,10 +141,14 @@ class SyncObjects(object):
         """:return A SyncObject if this version was new to us, else None
 
         """
-        LOG.debug(
-            "SyncObjects.on_fetch_complete %s/%s" % (
-                sync_type.str, version)
-        )
+        try:
+            event.Event(Message(
+                Message.priorities.DEBUG,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "SyncObjects.on_fetch_complete %s/%s" % (
+                    sync_type.str, version)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         self._fetching_at[sync_type] = None
 
         # A fetch might give us a newer version than we knew we had asked for
@@ -117,14 +157,24 @@ class SyncObjects(object):
 
         # Don't store this if we already got something newer
         if sync_type.cmp(version, self.get_version(sync_type)) <= 0:
-            LOG.warn(
-                "Ignoring outdated"
-                " update %s/%s" % (sync_type.str, version)
-            )
+            try:
+                event.Event(Message(
+                    Message.priorities.WARNING,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "Ignoring outdated"
+                     " update %s/%s" % (sync_type.str, version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             new_object = None
         else:
-            LOG.info("Got new version %s/%s" % (sync_type.str, version))
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "Got new version %s/%s" % (
+                        sync_type.str, version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             new_object = self.set_map(sync_type, version, data)
 
         return new_object
-

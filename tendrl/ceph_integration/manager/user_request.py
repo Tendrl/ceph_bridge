@@ -1,4 +1,3 @@
-import logging
 import uuid
 
 from tendrl.ceph_integration import ceph
@@ -7,8 +6,9 @@ from tendrl.ceph_integration.types import PgSummary
 from tendrl.ceph_integration.types import USER_REQUEST_COMPLETE
 from tendrl.ceph_integration.types import USER_REQUEST_SUBMITTED
 from tendrl.ceph_integration.util import now
-
-LOG = logging.getLogger(__name__)
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
 
 class PublishError(Exception):
@@ -177,8 +177,14 @@ class UserRequestBase(object):
 
         """
         self.result = result
-        LOG.info("Request %s JID %s completed with result=%s" %
-                 (self.id, self.jid, self.result))
+        try:
+            event.Event(Message(
+                Message.priorities.INFO,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "Request %s JID %s completed with result=%s" %
+                    (self.id, self.jid, self.result)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         self.jid = None
 
         # This is a default behaviour for UserRequests which don't
@@ -192,9 +198,14 @@ class UserRequestBase(object):
         """
         assert self.state != self.COMPLETE
         assert self.jid is None
-
-        LOG.info("Request %s completed with error=%s (%s)" %
-                 (self.id, self.error, self.error_message))
+        try:
+            event.Event(Message(
+                Message.priorities.INFO,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "Request %s completed with error=%s (%s)" %
+                    (self.id, self.error, self.error_message)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         self.state = self.COMPLETE
         self.completed_at = now()
 
@@ -231,9 +242,14 @@ class RadosRequest(UserRequest):
     def _submit(self, commands=None):
         if commands is None:
             commands = self._commands
-
-        LOG.debug("%s._submit: %s/%s" %
-                  (self.__class__.__name__, self._cluster_name, commands))
+        try:
+            event.Event(Message(
+                Message.priorities.DEBUG,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "%s._submit: %s/%s" %
+                    (self.__class__.__name__, self._cluster_name, commands)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         return ceph.rados_commands(self.fsid, self._cluster_name, commands)
 
 
@@ -284,12 +300,24 @@ class OsdMapModifyingRequest(RadosRequest):
 
         ready = osd_map.version >= self._await_version
         if ready:
-            LOG.debug("check passed (%s >= %s)" % (osd_map.version,
-                                                   self._await_version))
+            try:
+                event.Event(Message(
+                    Message.priorities.DEBUG,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "check passed (%s >= %s)" %
+                        (osd_map.version, self._await_version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             self.complete()
         else:
-            LOG.debug("check pending (%s < %s)" % (osd_map.version,
-                                                   self._await_version))
+            try:
+                event.Event(Message(
+                    Message.priorities.DEBUG,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "check pending (%s < %s)" %
+                        (osd_map.version, self._await_version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
 
 
 class PoolCreatingRequest(OsdMapModifyingRequest):
@@ -343,11 +371,18 @@ class PoolCreatingRequest(OsdMapModifyingRequest):
                         break
 
                 if self._pool_id is None:
-                    LOG.error("'{0}' not found, pools are {1}".format(
-                        self._pool_name, [
-                            p['pool_name']
-                            for p in osd_map.pools_by_id.values()]
-                    ))
+                    try:
+                        event.Event(Message(
+                            Message.priorities.ERROR,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "'{0}' not found, "
+                                "pools are {1}".format(
+                                    self._pool_name, [
+                                        p['pool_name']
+                                        for p in osd_map.pools_by_id.values()]
+                                )}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
                     self.set_error(
                         "Expected pool '{0}' not found".format(
                             self._pool_name)
@@ -525,10 +560,18 @@ class PgCreatingRequest(OsdMapModifyingRequest):
             }
 
     def on_map(self, sync_type, sync_object):
-        LOG.debug("PgCreatingRequest %s %s" % (sync_type.str, self._phase))
+        try:
+            event.Event(Message(
+                Message.priorities.DEBUG,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "PgCreatingRequest %s %s" %
+                 (sync_type.str, self._phase)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         if self._phase == self.PG_MAP_WAIT:
             if sync_type == PgSummary:
-                # Count the PGs in this pool which are not in state 'creating'
+                # Count the PGs in this pool
+                # which are not in state 'creating'
                 pg_summary = sync_object
                 pgs_not_creating = 0
 
@@ -540,28 +583,57 @@ class PgCreatingRequest(OsdMapModifyingRequest):
                         pgs_not_creating += count
 
                 self._pg_progress.set_created_pg_count(pgs_not_creating)
-                LOG.debug(
-                    "PgCreatingRequest.on_map: pg_counter=%s/%s (final %s)" % (
-                        pgs_not_creating,
-                        self._pg_progress.goal,
-                        self._pg_progress.final)
-                )
+                try:
+                    event.Event(Message(
+                        Message.priorities.DEBUG,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "PgCreatingRequest.on_map: "
+                         "pg_counter=%s/%s (final %s)" % (
+                             pgs_not_creating,
+                             self._pg_progress.goal,
+                             self._pg_progress.final)}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
                 if pgs_not_creating >= self._pg_progress.goal:
                     if self._pg_progress.is_final_block():
-                        LOG.debug(
-                            "PgCreatingRequest.on_map Creations complete")
+                        try:
+                            event.Event(Message(
+                                Message.priorities.DEBUG,
+                                Message.publishers.CEPH_INTEGRATION,
+                                {"message": "PgCreatingRequest.on_map "
+                                 "Creations complete"}))
+                        except event.EventFailed:
+                            print(traceback.format_exc())
                         if self._post_create_commands:
-                            LOG.debug(
-                                "PgCreatingRequest.on_map"
-                                " Issuing post-create commands")
+                            try:
+                                event.Event(Message(
+                                    Message.priorities.DEBUG,
+                                    Message.publishers.CEPH_INTEGRATION,
+                                    {"message": "PgCreatingRequest.on_map"
+                                     " Issuing post-create commands"}))
+                            except event.EventFailed:
+                                print(traceback.format_exc())
                             self._submit(self._post_create_commands)
                             self._phase = self.JID_WAIT
                         else:
-                            LOG.debug("PgCreatingRequest.on_map All done")
+                            try:
+                                event.Event(Message(
+                                    Message.priorities.DEBUG,
+                                    Message.publishers.CEPH_INTEGRATION,
+                                    {"message": "PgCreatingRequest.on_map "
+                                     "All done"}))
+                            except event.EventFailed:
+                                print(traceback.format_exc())
                             self.complete()
                     else:
-                        LOG.debug(
-                            "PgCreatingREQUEST.on_map Issuing more creates")
+                        try:
+                            event.Event(Message(
+                                Message.priorities.DEBUG,
+                                Message.publishers.CEPH_INTEGRATION,
+                                {"message": "PgCreatingREQUEST.on_map "
+                                 "Issuing more creates"}))
+                        except event.EventFailed:
+                            print(traceback.format_exc())
                         self._pg_progress.advance_goal()
                         # Request another tranche of PGs up to _block_size
                         self._submit([('osd pool set', {
@@ -579,7 +651,8 @@ class PgCreatingRequest(OsdMapModifyingRequest):
                 pool = osd_map.pools_by_id[self._pool_id]
                 if pool['pg_num'] != self._pg_progress.expected_count():
                     self.set_error(
-                        "PG creation interrupted (unexpected change to pg_num)"
+                        "PG creation interrupted "
+                        "(unexpected change to pg_num)"
                     )
                     self.complete()
                     return
@@ -616,9 +689,11 @@ class PgCreatingRequest(OsdMapModifyingRequest):
                     # post_create_commands, we we're all done!
                     self.complete()
                 else:
-                    # This was the OSD map update from a PG creation command,
+                    # This was the OSD map update from a
+                    # PG creation command,
                     # so start waiting for the pgs
                     self._phase = self.PG_MAP_WAIT
         else:
             raise NotImplementedError(
-                "Unexpected {0} in phase {1}".format(sync_type, self._phase))
+                "Unexpected {0} in phase {1}".format(
+                    sync_type, self._phase))

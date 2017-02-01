@@ -1,11 +1,14 @@
 import datetime
-import logging
 
 import gevent.event
 from pytz import utc
 
 
+from tendrl.commons import event
+from tendrl.commons.message import Message
 from tendrl.commons import sds_sync
+import traceback
+
 from tendrl.ceph_integration import ceph
 from tendrl.ceph_integration.manager.crush_node_request_factory import \
     CrushNodeRequestFactory
@@ -19,8 +22,6 @@ from tendrl.ceph_integration.sds_sync.sync_objects import SyncObjects
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES, \
     SYNC_OBJECT_STR_TYPE, CRUSH_MAP, CRUSH_NODE, OSD, POOL
 from tendrl.ceph_integration.util import now
-
-LOG = logging.getLogger(__name__)
 
 
 class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
@@ -50,7 +51,13 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         tendrl_ns.tendrl_context.name = self.name = cluster_data['name']
 
     def _run(self):
-        LOG.info("%s running" % self.__class__.__name__)
+        try:
+            event.Event(Message(
+                Message.priorities.INFO,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "%s running" % self.__class__.__name__}))
+        except event.EventFailed:
+            print(traceback.format_exc())
 
         while not self._complete.is_set():
             gevent.sleep(3)
@@ -58,7 +65,13 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
 
             self.on_heartbeat(cluster_data)
 
-        LOG.info("%s complete" % self.__class__.__name__)
+        try:
+            event.Event(Message(
+                Message.priorities.INFO,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "%s complete" % self.__class__.__name__}))
+        except event.EventFailed:
+            print(traceback.format_exc())
 
     def on_heartbeat(self, cluster_data):
         """Handle a ceph.heartbeat.
@@ -74,7 +87,10 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
             return
         self.update_time = datetime.datetime.utcnow().replace(tzinfo=utc)
 
-        LOG.info('Checking for version increments in heartbeat...')
+        event.Event(Message(
+            Message.priorities.INFO,
+            Message.publishers.CEPH_INTEGRATION,
+            {"message": 'Checking for version increments in heartbeat...'}))
         for sync_type in SYNC_OBJECT_TYPES:
             data = self._sync_objects.on_version(
                 sync_type, cluster_data['versions'][sync_type.str]
@@ -102,7 +118,14 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
             if sync_type.str == "osd_map":
                 util_data = self._get_utilization_data()
                 for raw_pool in sync_object.get('pools', []):
-                    LOG.info("Updating Pool %s" % raw_pool['pool_name'])
+                    try:
+                        event.Event(Message(
+                            Message.priorities.INFO,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "Updating Pool %s" %
+                             raw_pool['pool_name']}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
                     for pool in util_data['pools']:
                         if pool['name'] == raw_pool['pool_name']:
                             pool_used = pool['used']
@@ -116,10 +139,11 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         percent_used=pcnt
                     ).save()
         else:
-            LOG.warn(
-                "ClusterMonitor.on_sync_object: stale object"
-                " received for %s" % data['type']
-            )
+            event.Event(Message(
+                Message.priorities.WARNING,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": "ClusterMonitor.on_sync_object: stale object"
+                 " received for %s" % data['type']}))
 
     def _get_utilization_data(self):
         from ceph_argparse import json_command

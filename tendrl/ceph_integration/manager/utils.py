@@ -1,9 +1,10 @@
-import logging
 import os
 import os.path
 import subprocess
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
-LOG = logging.getLogger(__name__)
 TENDRL_CONTEXT = "/etc/tendrl/ceph-integration/tendrl_context"
 FSID = "/etc/tendrl/ceph-integration/fsid"
 NODE_CONTEXT = "/etc/tendrl/node_agent/node_context"
@@ -13,7 +14,14 @@ def get_tendrl_context():
     if os.path.isfile(TENDRL_CONTEXT):
         with open(TENDRL_CONTEXT) as f:
             cluster_id = f.read()
-            LOG.info("TendrlContext.integration_id=%s found!" % cluster_id)
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "TendrlContext.integration_id=%s found!" %
+                     cluster_id}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             return cluster_id
     else:
         return None
@@ -23,7 +31,14 @@ def get_node_context():
     if os.path.isfile(NODE_CONTEXT):
         with open(NODE_CONTEXT) as f:
             node_id = f.read()
-            LOG.info("Node_context.node_id==%s found!" % node_id)
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "Node_context.node_id==%s found!" %
+                     node_id}))
+            except event.EventFailed:
+                print(traceback.format_exc())
             return node_id
 
 
@@ -34,7 +49,14 @@ def get_fsid():
         with open(FSID) as f:
             fsid = f.read()
             if fsid:
-                LOG.info("TendrlContext.fsid==%s found!" % fsid)
+                try:
+                    event.Event(Message(
+                        Message.priorities.INFO,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "TendrlContext.fsid==%s found!" %
+                         fsid}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
                 return fsid
     else:
         return None
@@ -46,7 +68,14 @@ def set_fsid(fsid):
         with open(FSID, 'wb+') as f:
             f.write(fsid)
             current_fsid = fsid
-            LOG.info("TendrlContext.fsid==%s created!" % fsid)
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": "TendrlContext.fsid==%s created!" %
+                     fsid}))
+            except event.EventFailed:
+                print(traceback.format_exc())
 
     return current_fsid
 

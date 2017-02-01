@@ -1,13 +1,11 @@
-import logging
-
-
 from collections import defaultdict
 from collections import namedtuple
 
+from tendrl.commons import event
+from tendrl.commons.message import Message
+import traceback
 
 from tendrl.ceph_integration.util import memoize
-
-LOG = logging.getLogger(__name__)
 
 CRUSH_RULE_TYPE_REPLICATED = 1
 CRUSH_RULE_TYPE_ERASURE = 3
@@ -86,11 +84,15 @@ class OsdMap(VersionedSyncObject):
     def _map_osd_metadata(self, metadata):
         osd_id_to_metadata = {}
         if len(metadata) == 0:
-            LOG.info(
-                'No OSD metadata found in OSDMap version:{v}'
-                ' try running "sudo salt \'*\' '
-                'salt_util.sync_modules"'.format(v=self.version)
-            )
+            try:
+                event.Event(Message(
+                    Message.priorities.INFO,
+                    Message.publishers.CEPH_INTEGRATION,
+                    {"message": 'No OSD metadata found in OSDMap version:{v}'
+                     ' try running "sudo salt \'*\' '
+                     'salt_util.sync_modules"'.format(v=self.version)}))
+            except event.EventFailed:
+                print(traceback.format_exc())
 
         for m in metadata:
             osd_id_to_metadata[m['osd']] = m
@@ -123,11 +125,14 @@ class OsdMap(VersionedSyncObject):
                     if (child_id, node['id']) not in has_been_mapped:
                         parent_map[child_id].append(node)
                         has_been_mapped.add((child_id, node['id']))
-        LOG.info(
-            'crush node parent map {p} version {v}'.format(
-                p=parent_map, v=self.version
-            )
-        )
+        try:
+            event.Event(Message(
+                Message.priorities.INFO,
+                Message.publishers.CEPH_INTEGRATION,
+                {"message": 'crush node parent map {p} version {v}'.format(
+                    p=parent_map, v=self.version)}))
+        except event.EventFailed:
+            print(traceback.format_exc())
         return dict(parent_map)
 
     @property
@@ -242,7 +247,14 @@ class OsdMap(VersionedSyncObject):
                 # Fallthrough, the pool size didn't fall within any of the
                 # rules in its ruleset, Calamari doesn't understand.
                 # Just report all OSDs instead of failing horribly.
-                LOG.error("Cannot determine OSDS for pool %s" % pool_id)
+                try:
+                    event.Event(Message(
+                        Message.priorities.ERROR,
+                        Message.publishers.CEPH_INTEGRATION,
+                        {"message": "Cannot determine OSDS for pool %s" %
+                         pool_id}))
+                except event.EventFailed:
+                    print(traceback.format_exc())
                 osds = self.osds_by_id.keys()
 
             result[pool_id] = osds
@@ -261,9 +273,14 @@ class OsdMap(VersionedSyncObject):
                 try:
                     osds[in_pool_id].append(pool_id)
                 except KeyError:
-                    LOG.warning(
-                        "OSD {0} is present in CRUSH map, but not in OSD map"
-                    )
+                    try:
+                        event.Event(Message(
+                            Message.priorities.WARNING,
+                            Message.publishers.CEPH_INTEGRATION,
+                            {"message": "OSD {0} is present in CRUSH map, "
+                             "but not in OSD map"}))
+                    except event.EventFailed:
+                        print(traceback.format_exc())
 
         return osds
 
