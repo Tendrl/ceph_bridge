@@ -6,7 +6,7 @@ from tendrl.ceph_integration.types import OsdMap
 from tendrl.ceph_integration.types import PgSummary
 from tendrl.ceph_integration.types import USER_REQUEST_COMPLETE
 from tendrl.ceph_integration.types import USER_REQUEST_SUBMITTED
-from tendrl.ceph_integration.util import now
+from tendrl.commons.utils.tz_utils import now
 
 LOG = logging.getLogger(__name__)
 
