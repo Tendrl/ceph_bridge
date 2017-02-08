@@ -10,7 +10,7 @@ class OsdRequestFactory(RequestFactory):
     def update(self, osd_id, attributes):
         commands = []
 
-        osd_map = self._cluster_monitor.get_sync_object(OsdMap)
+        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
 
         # in/out/down take a vector of strings called
         # 'ids', while 'reweight' takes a single integer
@@ -116,7 +116,7 @@ class OsdRequestFactory(RequestFactory):
 
         """
         ret_val = {}
-        osd_map = self._cluster_monitor.get_sync_object(OsdMap)
+        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
         for osd_id in osds:
             if osd_map.osds_by_id[osd_id]['up']:
                 ret_val[osd_id] = {'valid_commands': OSD_IMPLEMENTED_COMMANDS}
@@ -148,7 +148,7 @@ class OsdRequestFactory(RequestFactory):
 
     def update_config(self, _, attributes):
 
-        osd_map = self._cluster_monitor.get_sync_object(OsdMap)
+        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
 
         commands = self._commands_to_set_flags(osd_map, attributes)
 

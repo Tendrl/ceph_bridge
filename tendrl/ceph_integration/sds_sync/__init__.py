@@ -107,11 +107,26 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         if pool['name'] == raw_pool['pool_name']:
                             pool_used = pool['used']
                             pcnt = pool['pcnt_used']
+                    pool_type = 'replicated'
+                    if 'erasure_code_profile' in raw_pool and \
+                        raw_pool['erasure_code_profile'] != "":
+                        pool_type = 'erasure_coded'
+                    quota_enabled = False
+                    if ('quota_max_objects' in raw_pool and \
+                        raw_pool['quota_max_objects'] > 0) or \
+                        ('quota_max_bytes' in raw_pool and \
+                        raw_pool['quota_max_bytes'] > 0):
+                        quota_enabled = True
                     tendrl_ns.ceph_integration.objects.Pool(
                         pool_id=raw_pool['pool'],
                         pool_name=raw_pool['pool_name'],
                         pg_num=raw_pool['pg_num'],
+                        type=pool_type,
+                        erasure_code_profile=raw_pool.get('erasure_code_profile'),
                         min_size=raw_pool['min_size'],
+                        quota_enabled=quota_enabled,
+                        quota_max_objects=raw_pool['quota_max_objects'],
+                        quota_max_bytes=raw_pool['quota_max_bytes'],
                         used=pool_used,
                         percent_used=pcnt
                     ).save()

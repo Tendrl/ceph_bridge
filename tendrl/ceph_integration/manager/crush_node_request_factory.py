@@ -16,7 +16,7 @@ class CrushNodeRequestFactory(RequestFactory):
 
     def __init__(self, monitor):
         super(CrushNodeRequestFactory, self).__init__(monitor)
-        self.osd_map = self._cluster_monitor.get_sync_object(OsdMap)
+        self.osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
         # HERE we have access to the cluster_monitor and likely the server
         # monitor
         # self._server_monitor = monitor._servers

@@ -1,26 +1,24 @@
 from tendrl.ceph_integration.manager.crud import Crud
-from tendrl.ceph_integration.manager import utils as manager_utils
 from tendrl.ceph_integration import objects
+from tendrl.ceph_integration.objects.pool import Pool
 
 
 class Delete(objects.CephIntegrationBaseAtom):
-    def __init__(self, config=None, *args, **kwargs):
-        super(Create, self).__init__(*args, **kwargs)
-        self.obj = objects.Pool
+    obj = Pool
+    def __init__(self, *args, **kwargs):
+        super(Delete, self).__init__(*args, **kwargs)
 
-    def run(self, parameters):
-        cluster_id = parameters['TendrlContext.integration_id']
-        pool_id = parameters['Pool.pool_id']
-        fsid = manager_utils.get_fsid()
-        crud = Crud(parameters['manager'])
+    def run(self):
+        pool_id = self.parameters['Pool.pool_id']
+        crud = Crud()
         crud.delete(
-            fsid,
             "pool",
             pool_id
         )
 
-        etcd_client = parameters['etcd_client']
-        pool_key = "clusters/%s/Pools/%s/deleted" % (cluster_id, pool_id)
-        etcd_client.write(pool_key, "True")
+        tendrl_ns.ceph_integration.objects.Pool(
+            pool_id=pool_id,
+            deleted="True"
+        ).save()
 
         return True

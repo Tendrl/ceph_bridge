@@ -5,7 +5,11 @@ from tendrl.ceph_integration import objects
 class Pool(objects.CephIntegrationBaseObject):
     def __init__(self, pool_id=None,
                  pool_name=None, pg_num=None, min_size=None,
-                 used=None, percent_used=None, *args, **kwargs):
+                 used=None, percent_used=None,
+                 deleted=None, type=None,
+                 erasure_code_profile=None,
+                 quota_enabled=None, quota_max_objects=None,
+                 quota_max_bytes=None, *args, **kwargs):
         super(Pool, self).__init__(*args, **kwargs)
 
         self.value = 'clusters/%s/Pools/%s'
@@ -15,6 +19,12 @@ class Pool(objects.CephIntegrationBaseObject):
         self.min_size = min_size
         self.used = used
         self.percent_used = percent_used
+        self.deleted = deleted
+        self.type = type
+        self.erasure_code_profile = erasure_code_profile
+        self.quota_enabled = quota_enabled
+        self.quota_max_objects = quota_max_objects
+        self.quota_max_bytes = quota_max_bytes
         self._etcd_cls = _Pool
 
 
