@@ -4,7 +4,7 @@ import datetime
 
 from tendrl.ceph_integration import ceph
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES
-from tendrl.ceph_integration.util import now
+from tendrl.commons.utils.tz_utils import now
 
 LOG = logging.getLogger(__name__)
 

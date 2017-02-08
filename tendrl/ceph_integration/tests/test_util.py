@@ -2,10 +2,6 @@ import datetime
 from tendrl.ceph_integration import util
 
 
-def test_now():
-    assert type(util.now()) is datetime.datetime
-
-
 class Test_util(object):
 
     def test_Ticker(self):

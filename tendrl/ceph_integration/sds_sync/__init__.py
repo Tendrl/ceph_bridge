@@ -18,7 +18,7 @@ from tendrl.ceph_integration.manager.pool_request_factory import \
 from tendrl.ceph_integration.sds_sync.sync_objects import SyncObjects
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES, \
     SYNC_OBJECT_STR_TYPE, CRUSH_MAP, CRUSH_NODE, OSD, POOL
-from tendrl.ceph_integration.util import now
+from tendrl.commons.utils.tz_utils import now
 
 LOG = logging.getLogger(__name__)
 

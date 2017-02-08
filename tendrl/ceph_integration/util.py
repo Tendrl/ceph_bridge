@@ -1,14 +1,5 @@
-import datetime
-from pytz import utc
 import gevent.event
 import gevent.greenlet
-
-
-def now():
-    """A tz-aware now
-
-    """
-    return datetime.datetime.utcnow().replace(tzinfo=utc)
 
 
 class Ticker(gevent.greenlet.Greenlet):
