@@ -32,3 +32,6 @@ class CephIntegrationEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_nodecontext(self, node_context):
         tendrl_ns.etcd_orm.save(node_context)
+
+    def save_rbd(self, rbd):
+        tendrl_ns.etcd_orm.save(rbd)

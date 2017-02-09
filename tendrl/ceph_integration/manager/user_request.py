@@ -237,6 +237,25 @@ class RadosRequest(UserRequest):
         return ceph.rados_commands(self.fsid, self._cluster_name, commands)
 
 
+class RbdRequest(UserRequest):
+    """A user request whose remote operations consist of librados mon commands
+
+    """
+
+    def __init__(self, headline, fsid, cluster_name, pool_name, commands):
+        self._commands = commands
+        self._pool_name = pool_name
+        super(RbdRequest, self).__init__(headline, fsid, cluster_name)
+
+    def _submit(self, commands=None):
+        if commands is None:
+            commands = self._commands
+
+        LOG.debug("%s._submit: %s/%s" %
+                  (self.__class__.__name__, self._cluster_name, commands))
+        return ceph.rbd_command(commands, self._pool_name)
+
+
 class OsdMapModifyingRequest(RadosRequest):
     """Specialization of UserRequest which waits for Calamari's copy of
 
@@ -290,6 +309,24 @@ class OsdMapModifyingRequest(RadosRequest):
         else:
             LOG.debug("check pending (%s < %s)" % (osd_map.version,
                                                    self._await_version))
+
+
+class RbdMapModifyingRequest(RbdRequest):
+    """Specialization of UserRequest which waits for Calamari's copy of
+
+    the OsdMap sync object to catch up after execution of RADOS commands.
+
+    """
+
+    def __init__(self, headline, fsid, cluster_name, pool_name, commands):
+        super(RbdMapModifyingRequest, self).__init__(
+            headline, fsid, cluster_name, pool_name, commands)
+
+    @property
+    def associations(self):
+        return {
+            'fsid': self.fsid
+        }
 
 
 class PoolCreatingRequest(OsdMapModifyingRequest):
@@ -357,6 +394,14 @@ class PoolCreatingRequest(OsdMapModifyingRequest):
                 self._awaiting_pgs = True
         else:
             raise NotImplementedError("Unexpected map {0}".format(sync_type))
+
+
+class RbdCreatingRequest(RbdMapModifyingRequest):
+    def __init__(self, headline, fsid, cluster_name, rbd_name, pool_name,
+                 commands):
+        super(RbdCreatingRequest, self).__init__(
+            headline, fsid, cluster_name, pool_name, commands)
+        self._rbd_name = rbd_name
 
 
 class PgProgress(object):

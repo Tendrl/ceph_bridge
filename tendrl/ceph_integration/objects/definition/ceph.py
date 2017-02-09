@@ -4,7 +4,7 @@ namespace.tendrl.ceph_integration:
   flows:
     CreatePool:
       atoms:
-        - tendrl.ceph_integration.objects.pool.atoms.create
+        - tendrl.ceph_integration.objects.Pool.atoms.create.Create
       help: "Create Ceph Pool"
       enabled: true
       inputs:
@@ -72,6 +72,119 @@ namespace.tendrl.ceph_integration:
         master:
           help: master definitions
           type: String
+
+    Rbd:
+      atoms:
+        Create:
+          enabled: true
+          help: "Create rbd"
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+              - Rbd.size
+          name: "Create Rbd"
+          run: tendrl.ceph_integration.objects.Rbd.atoms.create.Create
+          type: Create
+          uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3720
+        Delete:
+          enabled: true
+          help: "Delete rbd"
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+          name: "Delete Rbd"
+          run: tendrl.ceph_integration.objects.Rbd.atoms.delete.Delete
+          type: Delete
+          uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3721
+        Resize:
+          enabled: true
+          help: "Resize Rbd"
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+              - Rbd.size
+          name: "Resize Rbd"
+          run: tendrl.ceph_integration.objects.Rbd.atoms.resize.Resize
+          type: Update
+          uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3722
+      flows:
+        CreateRbd:
+          atoms:
+            - tendrl.ceph_integration.objects.Rbd.atoms.create.Create
+          help: "Create Rbd"
+          enabled: true
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+              - Rbd.size
+          run: tendrl.ceph_integration.objects.Rbd.flows.create_rbd.CreateRbd
+          type: Create
+          uuid: 9bc41d8f-a0cf-420a-b2fe-18761e07f3d2
+        DeleteRbd:
+          atoms:
+            - tendrl.ceph_integration.objects.Rbd.atoms.delete.Delete
+          help: "Delete Rbd"
+          enabled: true
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+          run: tendrl.ceph_integration.objects.Rbd.flows.delete_rbd.DeleteRbd
+          type: Delete
+          uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3a7
+        ResizeRbd:
+          atoms:
+            - tendrl.ceph_integration.objects.Rbd.atoms.resize.Resize
+          help: "Resize Rbd"
+          enabled: true
+          inputs:
+            mandatory:
+              - Rbd.pool_id
+              - Rbd.name
+              - Rbd.size
+          run: tendrl.ceph_integration.objects.Rbd.flows.resize_rbd.ResizeRbd
+          type: Update
+          uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3c9
+      attrs:
+        name:
+          help: Name of the rbd
+          type: String
+        size:
+          help: Size of the rbd (MB)
+          type: int
+        pool_id:
+          help: Id of the pool
+          type: String
+        order:
+          help: Order of the rbd
+          type: String
+        block_name_prefix:
+          help: Prefix for the block name
+          type: String
+        format:
+          help: format of rbd
+          type: int
+        features:
+          help: featutres for rbd
+          type: list
+        flags:
+          help: flags for rbd
+          type: list
+        provisioned:
+          help: provisioned size
+          type: int
+        used:
+          help: used size
+          type: int
+      help: "Rbd"
+      enabled: true
+      value: clusters/$TendrlContext.integration_id/Pools/$Pool.pool_id/rbds/$Rbd.name
+      list: clusters/$TendrlContext.integration_id/Pools/$Pool.pool_id/rbds
+
     Pool:
       atoms:
         Create:
@@ -83,11 +196,13 @@ namespace.tendrl.ceph_integration:
               - Pool.pg_num
               - Pool.min_size
             optional:
-              - Pool.max_objects
-              - Pool.max_bytes
-              - Pool.ec_profile
+              - Pool.type
+              - Pool.erasure_code_profile
+              - Pool.quota_enabled
+              - Pool.quota_max_objects
+              - Pool.quota_max_bytes
           name: "Create Pool"
-          run: tendrl.ceph_integration.objects.pool.atoms.create.Create
+          run: tendrl.ceph_integration.objects.Pool.atoms.create.Create
           type: Create
           uuid: bd0155a8-ff15-42ff-9c76-5176f53c13e0
         Delete:
@@ -97,37 +212,66 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.pool_id
           name: "Delete Pool"
-          run: tendrl.ceph_integration.objects.pool.atoms.delete.Delete
+          run: tendrl.ceph_integration.objects.Pool.atoms.delete.Delete
           type: Delete
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3720
+        Update:
+          enabled: true
+          help: "Pool update Atom"
+          inputs:
+            mandatory:
+              - Pool.pool_id
+            optional:
+              - Pool.poolname
+              - Pool.size
+              - Pool.pg_num
+              - Pool.quota_enabled
+              - Pool.quota_max_objects
+              - Pool.quota_max_bytes
+          name: "Update Pool"
+          run: tendrl.ceph_integration.objects.Pool.atoms.update.Update
+          type: Update
+          uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3721
       flows:
         DeletePool:
           atoms:
-            - tendrl.ceph_integration.objects.pool.atoms.delete
+            - tendrl.ceph_integration.objects.Pool.atoms.delete.Delete
           help: "Delete Ceph Pool"
           enabled: true
           inputs:
             mandatory:
-              - Pool.pool_idclus
+              - Pool.pool_id
               - TendrlContext.sds_name
               - TendrlContext.sds_version
               - TendrlContext.integration_id
-          run: tendrl.ceph_integration.objects.pool.flows.delete.DeletePool
+          run: tendrl.ceph_integration.objects.Pool.flows.delete_pool.DeletePool
           type: Delete
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
+        UpdatePool:
+          atoms:
+            - tendrl.ceph_integration.objects.Pool.atoms.update.Update
+          help: "Update Ceph Pool"
+          enabled: true
+          inputs:
+            mandatory:
+              - Pool.pool_id
+            optional:
+              - Pool.poolname
+              - Pool.size
+              - Pool.pg_num
+              - Pool.quota_enabled
+              - Pool.quota_max_objects
+              - Pool.quota_max_bytes
+          run: tendrl.ceph_integration.objects.Pool.flows.update_pool.UpdatePool
+          type: Update
+          uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b2
       attrs:
         crush_ruleset:
           help: "The ID of a CRUSH ruleset to use for this pool. The specified ruleset must exist."
           type: Integer
-        ec_profile:
+        erasure_code_profile:
           help: "For erasure pools only.It must be an existing profile "
           type: String
-        max_bytes:
-          help: "quota for maximum number of bytes. To remove quota set the value to zero"
-          type: Integer
-        max_objects:
-          help: "quota for maximum number of objects. To remove quota set the value to zero"
-          type: Integer
         min_size:
           help: "sets the number of replicas for objects in the pool"
           type: Integer
@@ -143,7 +287,7 @@ namespace.tendrl.ceph_integration:
         poolname:
           help: "Name of the Ceph pool"
           type: String
-        pooltype:
+        type:
           help: "Type of the Ceph pool(ec or replicated)"
           type: String
         replica_count:
@@ -152,9 +296,20 @@ namespace.tendrl.ceph_integration:
         size:
           help: "Sets the minimum number of replicas required for I/O"
           type: Integer
+        quota_enabled:
+          help: if quota enabled for the pool
+          type: bool
+        quota_max_objects:
+          help: maximum no of object
+          type: int
+        quota_max_bytes:
+          help: maximum no of bytes
+          type: int
       help: "Pool"
       enabled: true
-      value: clusters/$TendrlContext.integration_id/maps/osd_map/data
+      value: clusters/$TendrlContext.integration_id/Pools/$Pool.pool_id
+      list: clusters/$TendrlContext.integration_id/Pools
+
     TendrlContext:
       attrs:
         integration_id:

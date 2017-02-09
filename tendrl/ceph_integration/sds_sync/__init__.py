@@ -15,9 +15,11 @@ from tendrl.ceph_integration.manager.osd_request_factory import \
     OsdRequestFactory
 from tendrl.ceph_integration.manager.pool_request_factory import \
     PoolRequestFactory
+from tendrl.ceph_integration.manager.rbd_request_factory import \
+    RbdRequestFactory
 from tendrl.ceph_integration.sds_sync.sync_objects import SyncObjects
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES, \
-    SYNC_OBJECT_STR_TYPE, CRUSH_MAP, CRUSH_NODE, OSD, POOL
+    SYNC_OBJECT_STR_TYPE, CRUSH_MAP, CRUSH_NODE, OSD, POOL, RBD
 from tendrl.ceph_integration.util import now
 
 LOG = logging.getLogger(__name__)
@@ -32,7 +34,8 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
             CRUSH_MAP: CrushRequestFactory,
             CRUSH_NODE: CrushNodeRequestFactory,
             OSD: OsdRequestFactory,
-            POOL: PoolRequestFactory
+            POOL: PoolRequestFactory,
+            RBD: RbdRequestFactory
         }
         self._sync_objects = SyncObjects(self.name)
 
@@ -107,19 +110,100 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         if pool['name'] == raw_pool['pool_name']:
                             pool_used = pool['used']
                             pcnt = pool['pcnt_used']
+                    pool_type = 'replicated'
+                    if 'erasure_code_profile' in raw_pool and \
+                        raw_pool['erasure_code_profile'] != "":
+                        pool_type = 'erasure_coded'
+                    quota_enabled = False
+                    if ('quota_max_objects' in raw_pool and \
+                        raw_pool['quota_max_objects'] > 0) or \
+                        ('quota_max_bytes' in raw_pool and \
+                        raw_pool['quota_max_bytes'] > 0):
+                        quota_enabled = True
                     tendrl_ns.ceph_integration.objects.Pool(
                         pool_id=raw_pool['pool'],
                         pool_name=raw_pool['pool_name'],
                         pg_num=raw_pool['pg_num'],
+                        type=pool_type,
+                        erasure_code_profile=raw_pool.get('erasure_code_profile'),
                         min_size=raw_pool['min_size'],
+                        quota_enabled=quota_enabled,
+                        quota_max_objects=raw_pool['quota_max_objects'],
+                        quota_max_bytes=raw_pool['quota_max_bytes'],
                         used=pool_used,
                         percent_used=pcnt
                     ).save()
+
+                    # Get the rbds for the pool and update
+                    rbd_details = self._get_rbds(raw_pool['pool_name'])
+                    for k,v in rbd_details.iteritems():
+                        tendrl_ns.ceph_integration.objects.Rbd(
+                            name=k,
+                            size=v['size'],
+                            pool_id=raw_pool['pool'],
+                            order=v['order'],
+                            block_name_prefix=v['block_name_prefix'],
+                            format=v['format'],
+                            features=v['features'],
+                            flags=v['flags'],
+                            provisioned=self._to_bytes(v['provisioned']),
+                            used=self._to_bytes(v['used'])
+                        ).save()
         else:
             LOG.warn(
                 "ClusterMonitor.on_sync_object: stale object"
                 " received for %s" % data['type']
             )
+
+    def _get_rbds(self, pool_name):
+        rbd_details = {}
+
+        commands = [
+            "ls"
+        ]
+        cmd_out = ceph.rbd_command(commands, pool_name)
+        if cmd_out['err'] == "":
+            rbd_list = []
+            for item in cmd_out['out'].split('\n'):
+                if item != "":
+                    rbd_list.append(item)
+            for rbd in rbd_list:
+                commands = [
+                    "info", "--image", rbd
+                ]
+                cmd_out = ceph.rbd_command(
+                    commands,
+                    pool_name
+                )
+                if cmd_out['err'] == "":
+                    rbd_info = {}
+                    for item in cmd_out['out'].split('\n')[1:]:
+                        if item != "":
+                            if ":" in item:
+                                key = item.split(':')[0]
+                                if '\t' in key:
+                                    key = key[1:]
+                                rbd_info[key] = item.split(':')[1].strip()
+                            else:
+                                key = item.split()[0]
+                                if '\t' in key:
+                                    key = key[1:]
+                                rbd_info[key] = item.split()[1].strip()
+                            rbd_details[rbd] = rbd_info
+                commands = [
+                    "du", "--image", rbd
+                ]
+                cmd_out = ceph.rbd_command(
+                    commands,
+                    pool_name
+                )
+                if cmd_out['err'] == "":
+                    rbd_details[rbd]['provisioned'] = \
+                        cmd_out['out'].split('\n')[1].split()[1]
+                    rbd_details[rbd]['used'] = \
+                        cmd_out['out'].split('\n')[1].split()[2]
+
+        return rbd_details
 
     def _get_utilization_data(self):
         from ceph_argparse import json_command
@@ -303,6 +387,14 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
 
     def request_create(self, obj_type, attributes):
         return self._request('create', obj_type, attributes)
+
+    def request_rbd_delete(self, pool_id, rbd_name):
+        return self._request(
+            "delete_rbd",
+            "rbd",
+            pool_id=pool_id,
+            rbd_name=rbd_name
+        )
 
     def request_update(self, command, obj_type, obj_id, attributes):
         return self._request(command, obj_type, obj_id, attributes)

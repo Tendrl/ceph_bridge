@@ -13,9 +13,18 @@ from tendrl.ceph_integration.objects.node_context import NodeContext
 
 from tendrl.ceph_integration.flows.create_pool import CreatePool
 from tendrl.ceph_integration.objects.pool import Pool
+from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.ceph_integration.objects.pool.atoms.create import Create
 from tendrl.ceph_integration.objects.pool.atoms.delete import Delete
-from tendrl.ceph_integration.objects.pool.flows.delete import DeletePool
+from tendrl.ceph_integration.objects.pool.atoms.update import Update
+from tendrl.ceph_integration.objects.rbd.atoms.create import Create
+from tendrl.ceph_integration.objects.rbd.atoms.delete import Delete
+from tendrl.ceph_integration.objects.rbd.atoms.resize import Resize
+from tendrl.ceph_integration.objects.rbd.flows.create_rbd import CreateRbd
+from tendrl.ceph_integration.objects.rbd.flows.delete_rbd import DeleteRbd
+from tendrl.ceph_integration.objects.rbd.flows.resize_rbd import ResizeRbd
+from tendrl.ceph_integration.objects.pool.flows.delete_pool import DeletePool
+from tendrl.ceph_integration.objects.pool.flows.update_pool import UpdatePool
 from tendrl.ceph_integration.objects.sync_object import SyncObject
 
 

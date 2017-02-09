@@ -20,6 +20,9 @@ class RequestFactory(object):
     def delete(self, obj_id):
         raise NotImplementedError()
 
+    def delete_rbd(self, pool_id, name):
+        raise NotImplementedError()
+
     def update(self, obj_id, attributes):
         raise NotImplementedError()
 
