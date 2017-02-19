@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 import gevent.event
 from pytz import utc
@@ -27,7 +26,8 @@ from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES, \
     EC_PROFILE
 from tendrl.ceph_integration.util import now
 
-LOG = logging.getLogger(__name__)
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 
 class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
@@ -59,7 +59,13 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         tendrl_ns.tendrl_context.name = self.name = cluster_data['name']
 
     def _run(self):
-        LOG.info("%s running" % self.__class__.__name__)
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s running" % self.__class__.__name__}
+            )
+        )
 
         while not self._complete.is_set():
             gevent.sleep(3)
@@ -67,7 +73,13 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
 
             self.on_heartbeat(cluster_data)
 
-        LOG.info("%s complete" % self.__class__.__name__)
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s complete" % self.__class__.__name__}
+            )
+        )
 
     def on_heartbeat(self, cluster_data):
         """Handle a ceph.heartbeat.
@@ -83,7 +95,15 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
             return
         self.update_time = datetime.datetime.utcnow().replace(tzinfo=utc)
 
-        LOG.info('Checking for version increments in heartbeat...')
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": 'Checking for version increments in '
+                                    'heartbeat...'
+                         }
+            )
+        )
         for sync_type in SYNC_OBJECT_TYPES:
             data = self._sync_objects.on_version(
                 sync_type, cluster_data['versions'][sync_type.str]
@@ -234,7 +254,15 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                 ).save()
 
                 for raw_pool in sync_object.get('pools', []):
-                    LOG.info("Updating Pool %s" % raw_pool['pool_name'])
+                    Event(
+                        Message(
+                            priority="info",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={"message": "Updating Pool %s"
+                                                % raw_pool['pool_name']
+                                     }
+                        )
+                    )
                     for pool in util_data['pools']:
                         if pool['name'] == raw_pool['pool_name']:
                             pool_used = pool['used']
@@ -264,11 +292,16 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         percent_used=pcnt
                     ).save()
         else:
-            LOG.warn(
-                "ClusterMonitor.on_sync_object: stale object"
-                " received for %s" % data['type']
+            Event(
+                Message(
+                    priority="warning",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "ClusterMonitor.on_sync_object: "
+                                        "stale object received for %s"
+                                        % data['type']
+                             }
+                )
             )
-
     def _get_rbds(self, pool_name):
         """
         Invokes the below CLI commands
@@ -408,12 +441,27 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         raise rados.Error("Missing fields in cluster stat")
                     index += 1
                     if index >= len(lines):
-                        LOG.warning("No cluster stats to parse")
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "No cluster stats to parse"
+                                         }
+                            )
+                        )
                         return cluster_stat
                     line = lines[index]
                     cluster_fields = line.split()
                     if len(cluster_fields) < 4:
-                        LOG.warning("Missing fields in cluster stat")
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "Missing fields in cluster"
+                                                    " stat"
+                                         }
+                            )
+                        )
                         return cluster_stat
                     cluster_stat['total'] = self._to_bytes(
                         cluster_fields[cluster_size_idx]
@@ -431,7 +479,13 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                     pool_stat_available = True
                     index += 1
                     if index >= len(lines):
-                        LOG.warning("No pool stats to parse")
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "No pool stats to parse"}
+                            )
+                        )
                         return cluster_stat
                     pool_fields = lines[index].split()
                     pool_name_idx = self._idx_in_list(pool_fields, 'NAME')
@@ -448,14 +502,30 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                     if pool_name_idx == -1 or pool_id_idx == -1 or \
                         pool_used_idx == -1 or pool_pcnt_used_idx == -1 or \
                         pool_max_avail_idx == -1:
-                        LOG.warning("Missing fields in pool stat")
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "Missing fields in pool "
+                                                    "stat"
+                                         }
+                            )
+                        )
                         return cluster_stat
                     index += 1
                 if pool_stat_available is True:
                     line = lines[index]
                     pool_fields = line.split()
                     if len(pool_fields) < 5:
-                        LOG.warning("Missing fields in pool stat")
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "Missing fields in pool"
+                                                    " stat"
+                                         }
+                            )
+                        )
                         return cluster_stat
                     dict = {}
                     dict['name'] = pool_fields[pool_name_idx]

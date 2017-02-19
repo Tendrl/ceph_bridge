@@ -1,12 +1,8 @@
-import logging
-
 from tendrl.ceph_integration.manager.request_factory import RequestFactory
 from tendrl.ceph_integration.manager.user_request import RbdCreatingRequest
 from tendrl.ceph_integration.manager.user_request import RbdMapModifyingRequest
 from tendrl.ceph_integration.types import OsdMap
 
-
-LOG = logging.getLogger(__name__)
 
 # Valid values for the 'var' argument to 'ceph osd pool set'
 POOL_PROPERTIES = ["size", "min_size", "crash_replay_interval",
