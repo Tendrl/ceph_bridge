@@ -1,5 +1,3 @@
-import logging
-
 from tendrl.ceph_integration.types import CRUSH_MAP
 from tendrl.ceph_integration.types import CRUSH_NODE
 from tendrl.ceph_integration.types import EC_PROFILE
@@ -8,8 +6,6 @@ from tendrl.ceph_integration.types import OSD
 from tendrl.ceph_integration.types import OSD_MAP
 from tendrl.ceph_integration.types import POOL
 from tendrl.ceph_integration.types import RBD
-
-LOG = logging.getLogger(__name__)
 
 
 class Crud(object):

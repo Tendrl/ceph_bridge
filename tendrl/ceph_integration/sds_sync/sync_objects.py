@@ -1,13 +1,11 @@
-import logging
-
 import datetime
 
 from tendrl.ceph_integration import ceph
 from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES
 from tendrl.ceph_integration.util import now
 
-LOG = logging.getLogger(__name__)
-
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 class SyncObjects(object):
     """A collection of versioned objects, keyed by their class (which
@@ -55,22 +53,42 @@ class SyncObjects(object):
         I may choose to initiate RPC to retrieve the map
 
         """
-        LOG.debug(
-            "SyncObjects.on_version %s/%s" % (sync_type.str, new_version)
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "SyncObjects.on_version %s/%s" %
+                                    (sync_type.str, new_version)
+                         }
+            )
         )
         old_version = self.get_version(sync_type)
         if sync_type.cmp(new_version, old_version) > 0:
             known_version = self._known_versions[sync_type]
             if sync_type.cmp(new_version, known_version) > 0:
                 # We are out of date: request an up to date copy
-                LOG.info("Advanced known version %s/%s %s->%s" % (
-                    self._cluster_name, sync_type.str, known_version,
-                    new_version))
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "Advanced known version %s/%s "
+                                            "%s->%s" % (self._cluster_name,
+                                                        sync_type.str,
+                                                        known_version,
+                                                        new_version
+                                                        )
+                                 }
+                    )
+                )
                 self._known_versions[sync_type] = new_version
             else:
-                LOG.info(
-                    "on_version: %s is newer than %s" % (
-                        new_version, old_version
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "on_version: %s is newer than %s"
+                                            % (new_version, old_version)
+                                 }
                     )
                 )
 
@@ -79,22 +97,52 @@ class SyncObjects(object):
             # a while.
             if self._fetching_at[sync_type] is not None:
                 if now() - self._fetching_at[sync_type] < self.FETCH_TIMEOUT:
-                    LOG.info("Fetch already underway for %s" % sync_type.str)
+                    Event(
+                        Message(
+                            priority="info",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={"message": "Fetch already underway for %s"
+                                                % sync_type.str
+                                     }
+                        )
+                    )
                     return
                 else:
-                    LOG.warn("Abandoning fetch for %s started at %s" % (
-                        sync_type.str, self._fetching_at[sync_type]))
+                    Event(
+                        Message(
+                            priority="warning",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={"message": "Abandoning fetch for %s "
+                                                "started at %s"
+                                                % (sync_type.str,
+                                                   self._fetching_at[sync_type]
+                                                   )
+                                     }
+                        )
+                    )
 
-            LOG.info(
-                "on_version: fetching %s/%s , "
-                "currently got %s, know %s" % (
-                    sync_type, new_version, old_version, known_version
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "on_version: fetching %s/%s , "
+                                        "currently got %s, know %s"
+                                        % (sync_type, new_version,
+                                           old_version, known_version
+                                           )
+                             }
                 )
             )
             return self.fetch(sync_type)
 
     def fetch(self, sync_type):
-        LOG.debug("SyncObjects.fetch: %s" % sync_type)
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "SyncObjects.fetch: %s" % sync_type}
+            )
+        )
 
         self._fetching_at[sync_type] = now()
         # TODO(Rohan) clean up unused 'since' argument
@@ -105,9 +153,14 @@ class SyncObjects(object):
         """:return A SyncObject if this version was new to us, else None
 
         """
-        LOG.debug(
-            "SyncObjects.on_fetch_complete %s/%s" % (
-                sync_type.str, version)
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "SyncObjects.on_fetch_complete %s/%s"
+                                    % (sync_type.str, version)
+                         }
+            )
         )
         self._fetching_at[sync_type] = None
 
@@ -117,13 +170,26 @@ class SyncObjects(object):
 
         # Don't store this if we already got something newer
         if sync_type.cmp(version, self.get_version(sync_type)) <= 0:
-            LOG.warn(
-                "Ignoring outdated"
-                " update %s/%s" % (sync_type.str, version)
+            Event(
+                Message(
+                    priority="warning",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "Ignoring outdated update %s/%s" %
+                                        (sync_type.str, version)
+                             }
+                )
             )
             new_object = None
         else:
-            LOG.info("Got new version %s/%s" % (sync_type.str, version))
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "Got new version %s/%s" %
+                                        (sync_type.str, version)
+                             }
+                )
+            )
             new_object = self.set_map(sync_type, version, data)
 
         return new_object
