@@ -1,13 +1,12 @@
 import json
-import logging
 import os
 import subprocess
 
-from tendrl.commons.etcdobj import EtcdObj
-
 from tendrl.ceph_integration import objects
 
-LOG = logging.getLogger(__name__)
+from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 
 class TendrlContext(objects.CephIntegrationBaseObject):
@@ -26,10 +25,17 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         tendrl_context_path = "/etc/tendrl/ceph-integration/integration_id"
         with open(tendrl_context_path, 'wb+') as f:
             f.write(self.integration_id)
-            LOG.info("SET_LOCAL: "
-                     "tendrl_ns.ceph_integration.objects.TendrlContext.integration_id"
-                     "==%s" %
-                     self.integration_id)
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "SET_LOCAL: tendrl_ns."
+                                        "ceph_integration.objects."
+                                        "TendrlContext.integration_id==%s" %
+                                        self.integration_id
+                             }
+                )
+            )
 
     def _get_local_integration_id(self):
         try:
@@ -38,10 +44,18 @@ class TendrlContext(objects.CephIntegrationBaseObject):
                 with open(tendrl_context_path) as f:
                     integration_id = f.read()
                     if integration_id:
-                        LOG.info(
-                            "GET_LOCAL: "
-                            "tendrl_ns.ceph_integration.objects.TendrlContext"
-                            ".integration_id==%s" % integration_id)
+                        Event(
+                            Message(
+                                priority="info",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "GET_LOCAL: tendrl_ns."
+                                                    "ceph_integration.objects."
+                                                    "TendrlContext"
+                                                    ".integration_id==%s"
+                                                    % integration_id
+                                         }
+                            )
+                        )
                         return integration_id
         except AttributeError:
             return None
@@ -50,10 +64,16 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         tendrl_context_path = "/etc/tendrl/ceph-integration/fsid"
         with open(tendrl_context_path, 'wb+') as f:
             f.write(self.fsid)
-            LOG.info("SET_LOCAL: "
-                     "tendrl_ns.ceph_integration.objects.TendrlContext.fsid"
-                     "==%s" %
-                     self.fsid)
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "SET_LOCAL: tendrl_ns.ceph_integration"
+                                        ".objects.TendrlContext.fsid==%s" %
+                                        self.fsid
+                             }
+                )
+            )
 
     def _get_local_fsid(self):
         try:
@@ -62,10 +82,17 @@ class TendrlContext(objects.CephIntegrationBaseObject):
                 with open(tendrl_context_path) as f:
                     fsid = f.read()
                     if fsid:
-                        LOG.info(
-                            "GET_LOCAL: "
-                            "tendrl_ns.ceph_integration.objects.TendrlContext"
-                            ".fsid==%s" % fsid)
+                        Event(
+                            Message(
+                                priority="info",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "GET_LOCAL: tendrl_ns."
+                                                    "ceph_integration.objects."
+                                                    "TendrlContext.fsid==%s" %
+                                                    fsid
+                                         }
+                            )
+                        )
                         return fsid
         except AttributeError:
             return None
@@ -82,7 +109,13 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         )
         out, err = cmd.communicate()
         if err and 'command not found' in err:
-            LOG.info("ceph not installed on host")
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "ceph not installed on host"}
+                )
+            )
             return None
 
         # The output format from the command `ceph --version` is

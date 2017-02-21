@@ -1,5 +1,3 @@
-import logging
-
 from tendrl.ceph_integration.manager.request_factory import RequestFactory
 from tendrl.ceph_integration.manager.user_request import OsdMapModifyingRequest
 from tendrl.ceph_integration.manager.user_request import PgCreatingRequest
@@ -7,8 +5,9 @@ from tendrl.ceph_integration.manager.user_request import PoolCreatingRequest
 from tendrl.ceph_integration.types import Config
 from tendrl.ceph_integration.types import OsdMap
 
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
-LOG = logging.getLogger(__name__)
 
 # Valid values for the 'var' argument to 'ceph osd pool set'
 POOL_PROPERTIES = ["size", "min_size", "crash_replay_interval",
@@ -110,8 +109,15 @@ class PoolRequestFactory(RequestFactory):
             ret_min_size = min(min_size, size)
         else:
             ret_min_size = size - size / 2
-        LOG.info('_pool_min_size: size %d, min_size %d, ret %d' %
-                 (size, min_size, ret_min_size))
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": '_pool_min_size: size %d, min_size %d, '
+                                    'ret %d' % (size, min_size, ret_min_size)
+                         }
+            )
+        )
         return ret_min_size
 
     def update(self, pool_id, attributes):
@@ -227,8 +233,23 @@ class PoolRequestFactory(RequestFactory):
             post_create_attrs
         ))
 
-        LOG.debug("Post-create attributes: %s" % post_create_attrs)
-        LOG.debug("Commands: %s" % commands)
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "Post-create attributes: %s" %
+                                    post_create_attrs
+                         }
+            )
+        )
+
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "Commands: %s" % commands}
+            )
+        )
 
         return PoolCreatingRequest(
             "Creating pool '{name}'".format(name=attributes['name']),

@@ -1,4 +1,3 @@
-import logging
 import uuid
 
 from tendrl.ceph_integration import ceph
@@ -8,8 +7,8 @@ from tendrl.ceph_integration.types import USER_REQUEST_COMPLETE
 from tendrl.ceph_integration.types import USER_REQUEST_SUBMITTED
 from tendrl.ceph_integration.util import now
 
-LOG = logging.getLogger(__name__)
-
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 class PublishError(Exception):
     pass
@@ -175,8 +174,16 @@ class UserRequestBase(object):
 
         """
         self.result = result
-        LOG.info("Request %s JID %s completed with result=%s" %
-                 (self.id, self.jid, self.result))
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "Request %s JID %s completed with result="
+                                    "%s" % (self.id, self.jid, self.result)
+                         }
+            )
+        )
+
         self.jid = None
 
         # This is a default behaviour for UserRequests which don't
@@ -191,8 +198,16 @@ class UserRequestBase(object):
         assert self.state != self.COMPLETE
         assert self.jid is None
 
-        LOG.info("Request %s completed with error=%s (%s)" %
-                 (self.id, self.error, self.error_message))
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "Request %s completed with error=%s (%s)" %
+                                    (self.id, self.error, self.error_message)
+                         }
+            )
+        )
+
         self.state = self.COMPLETE
         self.completed_at = now()
 
@@ -230,10 +245,19 @@ class RadosRequest(UserRequest):
         if commands is None:
             commands = self._commands
 
-        LOG.debug("%s._submit: %s/%s" %
-                  (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
-                   commands))
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s._submit: %s/%s" %
+                                    (self.__class__.__name__,
+                                     tendrl_ns.state_sync_thread.name,
+                                     commands
+                                     )
+                         }
+            )
+        )
+
         return ceph.rados_commands(
             tendrl_ns.state_sync_thread.fsid,
             tendrl_ns.state_sync_thread.name,
@@ -253,10 +277,19 @@ class CephRequest(UserRequest):
         if commands is None:
             commands = self._commands
 
-        LOG.debug("%s._submit: %s/%s" %
-                  (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
-                   commands))
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s._submit: %s/%s" %
+                                    (self.__class__.__name__,
+                                     tendrl_ns.state_sync_thread.name,
+                                     commands
+                                     )
+                         }
+            )
+        )
+
         return ceph.ceph_command(
             tendrl_ns.state_sync_thread.name,
             commands)
@@ -276,10 +309,19 @@ class RbdRequest(UserRequest):
         if commands is None:
             commands = self._commands
 
-        LOG.debug("%s._submit: %s/%s" %
-                  (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
-                   commands))
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s._submit: %s/%s" %
+                                    (self.__class__.__name__,
+                                     tendrl_ns.state_sync_thread.name,
+                                     commands
+                                     )
+                         }
+            )
+        )
+
         return ceph.rbd_command(commands, self._pool_name)
 
 
@@ -330,13 +372,26 @@ class OsdMapModifyingRequest(RadosRequest):
 
         ready = osd_map.version >= self._await_version
         if ready:
-            LOG.debug("check passed (%s >= %s)" % (osd_map.version,
-                                                   self._await_version))
+            Event(
+                Message(
+                    priority="debug",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "check passed (%s >= %s)" %
+                                        (osd_map.version, self._await_version)
+                             }
+                )
+            )
             self.complete()
         else:
-            LOG.debug("check pending (%s < %s)" % (osd_map.version,
-                                                   self._await_version))
-
+            Event(
+                Message(
+                    priority="debug",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "check pending (%s < %s)" %
+                                        (osd_map.version, self._await_version)
+                             }
+                )
+            )
 
 class ECProfileModifyingRequest(CephRequest):
     def __init__(self, headline, commands):
@@ -419,11 +474,18 @@ class PoolCreatingRequest(OsdMapModifyingRequest):
                         break
 
                 if self._pool_id is None:
-                    LOG.error("'{0}' not found, pools are {1}".format(
-                        self._pool_name, [
-                            p['pool_name']
-                            for p in osd_map.pools_by_id.values()]
-                    ))
+                    Event(
+                        Message(
+                            priority="error",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={
+                                "message": "'{0}' not found, pools are "
+                                           "{1}".format(self._pool_name,
+                        [p['pool_name']for p in osd_map.pools_by_id.values()]
+                                                        )
+                            }
+                        )
+                    )
                     self.set_error(
                         "Expected pool '{0}' not found".format(
                             self._pool_name)
@@ -617,7 +679,15 @@ class PgCreatingRequest(OsdMapModifyingRequest):
             }
 
     def on_map(self, sync_type, sync_object):
-        LOG.debug("PgCreatingRequest %s %s" % (sync_type.str, self._phase))
+        Event(
+            Message(
+                priority="debug",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "PgCreatingRequest %s %s" %
+                                    (sync_type.str, self._phase)
+                         }
+            )
+        )
         if self._phase == self.PG_MAP_WAIT:
             if sync_type == PgSummary:
                 # Count the PGs in this pool which are not in state 'creating'
@@ -632,28 +702,64 @@ class PgCreatingRequest(OsdMapModifyingRequest):
                         pgs_not_creating += count
 
                 self._pg_progress.set_created_pg_count(pgs_not_creating)
-                LOG.debug(
-                    "PgCreatingRequest.on_map: pg_counter=%s/%s (final %s)" % (
-                        pgs_not_creating,
-                        self._pg_progress.goal,
-                        self._pg_progress.final)
+                Event(
+                    Message(
+                        priority="debug",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "PgCreatingRequest.on_map: "
+                                            "pg_counter=%s/%s (final %s)" %
+                                            (pgs_not_creating,
+                                             self._pg_progress.goal,
+                                             self._pg_progress.final
+                                             )
+                                 }
+                    )
                 )
                 if pgs_not_creating >= self._pg_progress.goal:
                     if self._pg_progress.is_final_block():
-                        LOG.debug(
-                            "PgCreatingRequest.on_map Creations complete")
+                        Event(
+                            Message(
+                                priority="debug",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "PgCreatingRequest.on_map "
+                                                    "Creations complete"
+                                         }
+                            )
+                        )
                         if self._post_create_commands:
-                            LOG.debug(
-                                "PgCreatingRequest.on_map"
-                                " Issuing post-create commands")
+                            Event(
+                                Message(
+                                    priority="debug",
+                                    publisher=tendrl_ns.publisher_id,
+                                    payload={"message": "PgCreatingRequest."
+                                                        "on_map Issuing "
+                                                        "post-create commands"
+                                             }
+                                )
+                            )
                             self._submit(self._post_create_commands)
                             self._phase = self.JID_WAIT
                         else:
-                            LOG.debug("PgCreatingRequest.on_map All done")
+                            Event(
+                                Message(
+                                    priority="debug",
+                                    publisher=tendrl_ns.publisher_id,
+                                    payload={"message": "PgCreatingRequest.on_"
+                                                        "map All done"
+                                             }
+                                )
+                            )
                             self.complete()
                     else:
-                        LOG.debug(
-                            "PgCreatingREQUEST.on_map Issuing more creates")
+                        Event(
+                            Message(
+                                priority="debug",
+                                publisher=tendrl_ns.publisher_id,
+                                payload={"message": "PgCreatingREQUEST.on_map "
+                                                    "Issuing more creates"
+                                         }
+                            )
+                        )
                         self._pg_progress.advance_goal()
                         # Request another tranche of PGs up to _block_size
                         self._submit([('osd pool set', {

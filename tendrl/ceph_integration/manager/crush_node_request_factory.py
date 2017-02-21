@@ -1,13 +1,12 @@
 import json
-import logging
 
 from tendrl.ceph_integration.manager.request_factory import RequestFactory
 from tendrl.ceph_integration.manager.user_request import OsdMapModifyingRequest
 from tendrl.ceph_integration.types import BucketNotEmptyError
 from tendrl.ceph_integration.types import OsdMap
 
-LOG = logging.getLogger(__name__)
-
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 class CrushNodeRequestFactory(RequestFactory):
     """Map REST API verbs onto CLI reality
@@ -48,8 +47,18 @@ class CrushNodeRequestFactory(RequestFactory):
                 'name'] or bucket_type != current_node['type_name']:
             commands.append(remove_bucket(current_node['name'], None))
 
-        LOG.info("Updating CRUSH node {c} parent {p} version {v}".format(
-            c=commands, p=parent, v=self.osd_map.version))
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "Updating CRUSH node {c} parent {p} "
+                                    "version {v}".format(c=commands,
+                                                         p=parent,
+                                                         v=self.osd_map.version
+                                                         )
+                         }
+            )
+        )
         message = "Updating CRUSH node in {cluster_name}".format(
             cluster_name=tendrl_ns.state_sync_thread.name)
         return OsdMapModifyingRequest(
