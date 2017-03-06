@@ -10,16 +10,6 @@ except ImportError:
     pass
 
 
-def extract_requirements(filename):
-    with open(filename, 'r') as requirements_file:
-        return [
-            x[:-1] for x in requirements_file.readlines()
-            if not x.startswith("#") and x[:-1] != ''
-        ]
-
-install_requires = extract_requirements('requirements.txt')
-
-
 def read_module_contents():
     with open('version.py') as app_init:
         return app_init.read()
@@ -110,7 +100,18 @@ setup(
     author_email="rkanade@redhat.com",
     license="LGPL-2.1+",
     zip_safe=False,
-    install_requires=install_requires,
+    install_requires=[
+        # Note tendrl-ceph-integration depends on ceph itself (at least ceph-common
+        # and python-rados), which can be installed from system (rpm or deb)
+        # packages only.
+        "PyYAML",
+        "gevent>=1.0",
+        "msgpack-python",
+        "namespaces",
+        "python-etcd",
+        "pytz",
+        "tendrl-commons",
+        ],
     entry_points={
         'console_scripts': ['tendrl-ceph-integration = '
                             'tendrl.ceph_integration.manager:main'

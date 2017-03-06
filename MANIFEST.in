@@ -1,7 +1,6 @@
 include LICENSE
 include AUTHORS
 include ChangeLog
-include requirements.txt
 include version.py
 exclude .gitignore
 exclude .gitreview
