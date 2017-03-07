@@ -24,7 +24,7 @@ class Create(objects.CephIntegrationBaseAtom):
                     (self.parameters['Rbd.name'],
                      self.parameters['Rbd.pool_id'])
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )
@@ -43,7 +43,7 @@ class Create(objects.CephIntegrationBaseAtom):
                         " Error: %s" % (self.parameters['Rbd.name'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
+                    job_id=self.parameters['job_id'],
                     flow_id=self.parameters["flow_id"],
                     cluster_id=tendrl_ns.tendrl_context.integration_id,
                 )
@@ -59,7 +59,7 @@ class Create(objects.CephIntegrationBaseAtom):
                     (self.parameters['Rbd.name'],
                      self.parameters['Rbd.pool_id'])
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )

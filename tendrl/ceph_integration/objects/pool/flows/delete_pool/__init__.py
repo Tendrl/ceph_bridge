@@ -19,7 +19,7 @@ class DeletePool(CephIntegrationBaseFlow):
                     "message": "Starting deletion flow for pool-id %s" %
                     (self.parameters['Pool.pool_id'])
                     },
-                request_id=self.request_id,
+                job_id=self.job_id,
                 flow_id=self.uuid,
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )
