@@ -13,7 +13,7 @@ class CreatePool(flows.CephIntegrationBaseFlow):
                     "message": "Starting creation flow for pool %s" %
                     self.parameters['Pool.poolname']
                 },
-                request_id=self.request_id,
+                job_id=self.job_id,
                 flow_id=self.uuid,
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )

@@ -45,7 +45,7 @@ class Update(objects.CephIntegrationBaseAtom):
                     (self.parameters['Pool.pool_id'],
                      str(attrs))
                     },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )
@@ -64,7 +64,7 @@ class Update(objects.CephIntegrationBaseAtom):
                         " Error: %s" % (self.parameters['Pool.pool_id'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
+                    job_id=self.parameters['job_id'],
                     flow_id=self.parameters["flow_id"],
                     cluster_id=tendrl_ns.tendrl_context.integration_id,
                 )
@@ -79,7 +79,7 @@ class Update(objects.CephIntegrationBaseAtom):
                     "message": "Pool %s successfully updated" %
                     (self.parameters['Pool.pool_id'])
                     },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )

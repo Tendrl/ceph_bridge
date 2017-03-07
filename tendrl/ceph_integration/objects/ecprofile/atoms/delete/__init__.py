@@ -19,7 +19,7 @@ class Delete(objects.CephIntegrationBaseAtom):
                     "message": "Deleting ec-profile %s" %
                     self.parameters['ECProfile.name'],
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters["flow_id"],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )
@@ -38,7 +38,7 @@ class Delete(objects.CephIntegrationBaseAtom):
                         " Error: %s" % (self.parameters['ECProfile.name'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
+                    job_id=self.parameters['job_id'],
                     flow_id=self.parameters["flow_id"],
                     cluster_id=tendrl_ns.tendrl_context.integration_id,
                 )
@@ -60,7 +60,7 @@ class Delete(objects.CephIntegrationBaseAtom):
                     "message": "Deleted ec-profile %s" %
                     self.parameters['ECProfile.name'],
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters["flow_id"],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )

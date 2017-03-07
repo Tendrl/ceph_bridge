@@ -18,7 +18,7 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
                 payload={
                     "message": "Checking if update parameters are valid"
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
                 cluster_id=tendrl_ns.tendrl_context.integration_id,
             )
@@ -38,7 +38,7 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
                         "message": "Invalid combination of pool update parameters. "
                         "Pool name shouldnt be updated with other parameters."
                     },
-                    request_id=self.parameters['request_id'],
+                    job_id=self.parameters['job_id'],
                     flow_id=self.parameters['flow_id'],
                     cluster_id=tendrl_ns.tendrl_context.integration_id,
                 )
@@ -60,7 +60,7 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
                         payload={
                             "message": "New pg-num cannot be less than existing value"
                         },
-                        request_id=self.parameters['request_id'],
+                        job_id=self.parameters['job_id'],
                         flow_id=self.parameters['flow_id'],
                         cluster_id=tendrl_ns.tendrl_context.integration_id,
                     )
