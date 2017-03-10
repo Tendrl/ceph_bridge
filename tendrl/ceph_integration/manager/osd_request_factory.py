@@ -10,7 +10,7 @@ class OsdRequestFactory(RequestFactory):
     def update(self, osd_id, attributes):
         commands = []
 
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
 
         # in/out/down take a vector of strings called
         # 'ids', while 'reweight' takes a single integer
@@ -57,58 +57,58 @@ class OsdRequestFactory(RequestFactory):
 
         if msg_attrs.keys() == ['in']:
             message = "Marking {cluster_name}-osd.{id} {state}".format(
-                cluster_name=tendrl_ns.state_sync_thread.name,
+                cluster_name=NS.state_sync_thread.name,
                 id=osd_id,
                 state=("in" if msg_attrs['in'] else "out")
             )
         elif msg_attrs.keys() == ['up']:
             message = "Marking {cluster_name}-osd.{id} down".format(
-                cluster_name=tendrl_ns.state_sync_thread.name, id=osd_id)
+                cluster_name=NS.state_sync_thread.name, id=osd_id)
         elif msg_attrs.keys() == ['reweight']:
             message = "Re-weighting {cluster_name}-osd.{id} to {pct}%".format(
-                cluster_name=tendrl_ns.state_sync_thread.name,
+                cluster_name=NS.state_sync_thread.name,
                 id=osd_id,
                 pct="{0:.1f}".format(msg_attrs['reweight'] * 100.0)
             )
         else:
             message = "Modifying {cluster_name}-osd.{id} ({attrs})".format(
-                cluster_name=tendrl_ns.state_sync_thread.name,
+                cluster_name=NS.state_sync_thread.name,
                 id=osd_id,
                 attrs=", ".join("%s=%s" % (k, v) for k, v in msg_attrs.items())
             )
 
         return OsdMapModifyingRequest(
             message,
-            tendrl_ns.state_sync_thread.fsid,
-            tendrl_ns.state_sync_thread.name, commands
+            NS.state_sync_thread.fsid,
+            NS.state_sync_thread.name, commands
         )
 
     def scrub(self, osd_id):
         return RadosRequest(
             "Initiating scrub on {cluster_name}-osd.{id}".format(
-                cluster_name=tendrl_ns.state_sync_thread.name, id=osd_id
+                cluster_name=NS.state_sync_thread.name, id=osd_id
             ),
-            tendrl_ns.state_sync_thread.fsid,
-            tendrl_ns.state_sync_thread.name,
+            NS.state_sync_thread.fsid,
+            NS.state_sync_thread.name,
             [('osd scrub', {'who': str(osd_id)})])
 
     def deep_scrub(self, osd_id):
         return RadosRequest(
             "Initiating deep-scrub on {cluster_name}-osd.{id}".format(
-                cluster_name=tendrl_ns.state_sync_thread.name,
+                cluster_name=NS.state_sync_thread.name,
                 id=osd_id
             ),
-            tendrl_ns.state_sync_thread.fsid,
-            tendrl_ns.state_sync_thread.name,
+            NS.state_sync_thread.fsid,
+            NS.state_sync_thread.name,
             [('osd deep-scrub', {'who': str(osd_id)})])
 
     def repair(self, osd_id):
         return RadosRequest(
             "Initiating repair on {cluster_name}-osd.{id}".format(
-                cluster_name=tendrl_ns.state_sync_thread.name, id=osd_id
+                cluster_name=NS.state_sync_thread.name, id=osd_id
             ),
-            tendrl_ns.state_sync_thread.fsid,
-            tendrl_ns.state_sync_thread.name,
+            NS.state_sync_thread.fsid,
+            NS.state_sync_thread.name,
             [('osd repair', {'who': str(osd_id)})])
 
     def get_valid_commands(self, osds):
@@ -116,7 +116,7 @@ class OsdRequestFactory(RequestFactory):
 
         """
         ret_val = {}
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
         for osd_id in osds:
             if osd_map.osds_by_id[osd_id]['up']:
                 ret_val[osd_id] = {'valid_commands': OSD_IMPLEMENTED_COMMANDS}
@@ -148,20 +148,20 @@ class OsdRequestFactory(RequestFactory):
 
     def update_config(self, _, attributes):
 
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
 
         commands = self._commands_to_set_flags(osd_map, attributes)
 
         if commands:
             return OsdMapModifyingRequest(
                 "Modifying OSD config {cluster_name} ({attrs})".format(
-                    cluster_name=tendrl_ns.state_sync_thread.name,
+                    cluster_name=NS.state_sync_thread.name,
                     attrs=", ".join(
                         "%s=%s" % (k, v) for k, v in attributes.items()
                     )
                 ),
-                tendrl_ns.state_sync_thread.fsid,
-                tendrl_ns.state_sync_thread.name,
+                NS.state_sync_thread.fsid,
+                NS.state_sync_thread.name,
                 commands
             )
 

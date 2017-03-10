@@ -232,11 +232,11 @@ class RadosRequest(UserRequest):
 
         LOG.debug("%s._submit: %s/%s" %
                   (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
+                   NS.state_sync_thread.name,
                    commands))
         return ceph.rados_commands(
-            tendrl_ns.state_sync_thread.fsid,
-            tendrl_ns.state_sync_thread.name,
+            NS.state_sync_thread.fsid,
+            NS.state_sync_thread.name,
             commands)
 
 
@@ -255,10 +255,10 @@ class CephRequest(UserRequest):
 
         LOG.debug("%s._submit: %s/%s" %
                   (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
+                   NS.state_sync_thread.name,
                    commands))
         return ceph.ceph_command(
-            tendrl_ns.state_sync_thread.name,
+            NS.state_sync_thread.name,
             commands)
 
 
@@ -278,7 +278,7 @@ class RbdRequest(UserRequest):
 
         LOG.debug("%s._submit: %s/%s" %
                   (self.__class__.__name__,
-                   tendrl_ns.state_sync_thread.name,
+                   NS.state_sync_thread.name,
                    commands))
         return ceph.rbd_command(commands, self._pool_name)
 
@@ -305,7 +305,7 @@ class OsdMapModifyingRequest(RadosRequest):
     @property
     def associations(self):
         return {
-            'fsid': tendrl_ns.state_sync_thread.fsid
+            'fsid': NS.state_sync_thread.fsid
         }
 
     @property
@@ -346,7 +346,7 @@ class ECProfileModifyingRequest(CephRequest):
     @property
     def associations(self):
         return {
-            'fsid': tendrl_ns.state_sync_thread.fsid
+            'fsid': NS.state_sync_thread.fsid
         }
 
 
@@ -364,7 +364,7 @@ class RbdMapModifyingRequest(RbdRequest):
     @property
     def associations(self):
         return {
-            'fsid': tendrl_ns.state_sync_thread.fsid
+            'fsid': NS.state_sync_thread.fsid
         }
 
 

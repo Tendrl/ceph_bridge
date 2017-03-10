@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class Utilization(objects.CephIntegrationBaseObject):
+class Utilization(objects.BaseObject):
     def __init__(self, total=None, used=None,
                  available=None, pcnt_used=None,
                  *args, **kwargs):
@@ -23,5 +23,5 @@ class _Utilization(EtcdObj):
     _tendrl_cls = Utilization
 
     def render(self):
-        self.__name__ = self.__name__ %tendrl_ns.tendrl_context.integration_id
+        self.__name__ = self.__name__ % NS.tendrl_context.integration_id
         return super(_Utilization, self).render()

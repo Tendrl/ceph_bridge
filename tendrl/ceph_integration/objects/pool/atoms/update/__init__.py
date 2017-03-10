@@ -1,12 +1,12 @@
 from tendrl.ceph_integration.manager.crud import Crud
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
-from tendrl.commons.objects.atoms import AtomExecutionFailedError
+from tendrl.commons.objects import AtomExecutionFailedError
 
 
-class Update(objects.CephIntegrationBaseAtom):
+class Update(objects.BaseAtom):
     obj = Pool
     def __init__(self, *args, **kwargs):
         super(Update, self).__init__(*args, **kwargs)
@@ -38,16 +38,16 @@ class Update(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Updating details for pool-id %s."
                     " Attributes: %s" %
                     (self.parameters['Pool.pool_id'],
                      str(attrs))
                     },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 
@@ -58,15 +58,15 @@ class Update(objects.CephIntegrationBaseAtom):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={
                         "message": "Failed to update pool %s."
                         " Error: %s" % (self.parameters['Pool.pool_id'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
-                    flow_id=self.parameters["flow_id"],
-                    cluster_id=tendrl_ns.tendrl_context.integration_id,
+                    job_id=self.parameters['job_id'],
+                    flow_id=self.parameters['flow_id'],
+                    cluster_id=NS.tendrl_context.integration_id,
                 )
             )
             return False
@@ -74,14 +74,14 @@ class Update(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Pool %s successfully updated" %
                     (self.parameters['Pool.pool_id'])
                     },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 

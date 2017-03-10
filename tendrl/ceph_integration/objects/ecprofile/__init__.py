@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class ECProfile(objects.CephIntegrationBaseObject):
+class ECProfile(objects.BaseObject):
     def __init__(self, name=None, k=None,
                  m=None, plugin=None,
                  directory=None,
@@ -30,5 +30,5 @@ class _ECProfile(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.integration_id, self.name)
+            (NS.tendrl_context.integration_id, self.name)
         return super(_ECProfile, self).render()

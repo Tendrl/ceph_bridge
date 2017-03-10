@@ -1,11 +1,10 @@
-from tendrl.ceph_integration import objects
-from tendrl.ceph_integration.flows import CephIntegrationBaseFlow
+from tendrl.commons import flows
 from tendrl.ceph_integration.objects.ecprofile import ECProfile
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
 
-class DeleteECProfile(CephIntegrationBaseFlow):
+class DeleteECProfile(flows.BaseFlow):
     obj = ECProfile
     def __init__(self, *args, **kwargs):
         super(DeleteECProfile, self).__init__(*args, **kwargs)
@@ -14,14 +13,14 @@ class DeleteECProfile(CephIntegrationBaseFlow):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Starting deletion flow for ec-profile %s" %
                     (self.parameters['ECProfile.name'])
                     },
-                request_id=self.request_id,
-                flow_id=self.uuid,
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                job_id=self.parameters['job_id'],
+                flow_id=self.parameters['flow_id'],
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 

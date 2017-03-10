@@ -21,7 +21,7 @@ LEGACY_MON_OSD_MAX_SPLIT_COUNT = "32"
 class PoolRequestFactory(RequestFactory):
 
     def _resolve_pool(self, pool_id):
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
         return osd_map.pools_by_id[pool_id]
 
     def _pool_attribute_commands(self, pool_name, attributes):
@@ -102,7 +102,7 @@ class PoolRequestFactory(RequestFactory):
         Used in both create and update
 
         '''
-        ceph_config = tendrl_ns.state_sync_thread.get_sync_object_data(Config)
+        ceph_config = NS.state_sync_thread.get_sync_object_data(Config)
         size = req_size or int(ceph_config.get('osd_pool_default_size'), 0)
         min_size = req_min_size or \
             int(ceph_config.get('osd_pool_default_min_size'), 0)
@@ -115,7 +115,7 @@ class PoolRequestFactory(RequestFactory):
         return ret_min_size
 
     def update(self, pool_id, attributes):
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
         pool = self._resolve_pool(pool_id)
         pool_name = pool['pool_name']
 
@@ -144,7 +144,7 @@ class PoolRequestFactory(RequestFactory):
             # For older revisions, we simply pretend that the setting exists
             # with a default setting.
             mon_osd_max_split_count = int(
-                tendrl_ns.state_sync_thread.get_sync_object_data(Config).get(
+                NS.state_sync_thread.get_sync_object_data(Config).get(
                     'mon_osd_max_split_count',
                     LEGACY_MON_OSD_MAX_SPLIT_COUNT
                 )

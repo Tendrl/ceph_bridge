@@ -6,13 +6,13 @@ import uuid
 from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons.utils import cmd_utils
 
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
 LOG = logging.getLogger(__name__)
 
 
-class NodeContext(objects.CephIntegrationBaseObject):
+class NodeContext(objects.BaseObject):
 
     def __init__(self, machine_id=None, node_id=None, fqdn=None,
                  tags=None, status=None, *args, **kwargs):
@@ -28,8 +28,7 @@ class NodeContext(objects.CephIntegrationBaseObject):
 
     def _get_machine_id(self):
         cmd = cmd_utils.Command("cat /etc/machine-id")
-        out, err, rc = cmd.run(
-            tendrl_ns.config.data['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run()
         return str(out)
 
     def _create_node_id(self, node_id=None):
@@ -38,7 +37,7 @@ class NodeContext(objects.CephIntegrationBaseObject):
         with open(local_node_context, 'wb+') as f:
             f.write(node_id)
             LOG.info("SET_LOCAL: "
-                     "tendrl_ns.node_agent.objects.NodeContext.node_id==%s" %
+                     "NS.ceph_integration.objects.NodeContext.node_id==%s" %
                      node_id)
         return node_id
 
@@ -50,8 +49,8 @@ class NodeContext(objects.CephIntegrationBaseObject):
                     node_id = f.read()
                     if node_id:
                         LOG.info(
-                            "GET_LOCAL: tendrl_ns.node_agent.objects.NodeContext"
-                            ".node_id==%s" % node_id)
+                            "GET_LOCAL: NS.ceph_integration.objects"
+                            ".NodeContext.node_id==%s" % node_id)
                         return node_id
         except AttributeError:
             return None
@@ -66,7 +65,7 @@ class _NodeContextEtcd(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ % (
-            tendrl_ns.tendrl_context.integration_id,
-            tendrl_ns.node_context.node_id
+            NS.tendrl_context.integration_id,
+            NS.node_context.node_id
         )
         return super(_NodeContextEtcd, self).render()

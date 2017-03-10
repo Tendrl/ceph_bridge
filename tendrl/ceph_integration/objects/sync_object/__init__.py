@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class SyncObject(objects.CephIntegrationBaseObject):
+class SyncObject(objects.BaseObject):
     def __init__(self, sync_type=None, version=None, when=None,
                  data=None, updated=None, *args, **kwargs):
         super(SyncObject, self).__init__(*args, **kwargs)
@@ -24,5 +24,5 @@ class _SyncObject(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.integration_id, self.sync_type)
+            (NS.tendrl_context.integration_id, self.sync_type)
         return super(_SyncObject, self).render()

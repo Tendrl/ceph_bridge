@@ -1,11 +1,11 @@
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
-from tendrl.commons.objects.atoms import AtomExecutionFailedError
+from tendrl.commons.objects import AtomExecutionFailedError
 
 
-class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
+class ValidUpdateParameters(objects.BaseAtom):
     obj = Pool
     def __init__(self, *args, **kwargs):
         super(ValidUpdateParameters, self).__init__(*args, **kwargs)
@@ -14,13 +14,13 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Checking if update parameters are valid"
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 
@@ -33,14 +33,14 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={
                         "message": "Invalid combination of pool update parameters. "
                         "Pool name shouldnt be updated with other parameters."
                     },
-                    request_id=self.parameters['request_id'],
+                    job_id=self.parameters['job_id'],
                     flow_id=self.parameters['flow_id'],
-                    cluster_id=tendrl_ns.tendrl_context.integration_id,
+                    cluster_id=NS.tendrl_context.integration_id,
                 )
             )
             raise AtomExecutionFailedError(
@@ -56,13 +56,14 @@ class ValidUpdateParameters(objects.CephIntegrationBaseAtom):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={
-                            "message": "New pg-num cannot be less than existing value"
+                            "message": "New pg-num cannot be less than "
+                            "existing value"
                         },
-                        request_id=self.parameters['request_id'],
+                        job_id=self.parameters['job_id'],
                         flow_id=self.parameters['flow_id'],
-                        cluster_id=tendrl_ns.tendrl_context.integration_id,
+                        cluster_id=NS.tendrl_context.integration_id,
                     )
                 )
                 raise AtomExecutionFailedError(

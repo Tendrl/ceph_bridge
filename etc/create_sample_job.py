@@ -6,20 +6,20 @@ import etcd
 job_id1 = str(uuid.uuid4())
 
 job = {
-    "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
-    "run": "tendrl.gluster_integration.flows.create.CreatePool",
-    "status": 'new',
+    "integration_id": "ab3b125e-4769-4071-a349-e82b380c11f4",
+    "run": "tendrl.ceph_integration.flows.CreatePool",
+    "status": "new",
     "parameters": {
         "Pool.poolname": 'test',
         "Pool.pg_num": 1,
-        "Pool.min_size": 1,
-        "TendrlContext.sds_name": "ceph",
-        "TendrlContext.sds_version": "1",
-        "TendrlContext.integration_id": "49fa2adde8a6e98591f0f5cb4bc5f44d"
+        "Pool.min_size": 1
     },
-    type: "sds"
+    "type": "node",
+    "node_ids": ["635ead0b-6ba3-47c9-a054-009e65acea3e"]
 }
 
-
-client = etcd.Client()
-client.write("/queue/job_%s" % job_id1, json.dumps(job))
+print("/queue/%s/" % job_id1)
+client = etcd.Client(host="localhost", port=2379)
+client.write("/queue/%s" % job_id1, None, dir=True)
+client.write("/queue/%s/payload" % job_id1, json.dumps(job))
+client.write("/queue/%s/status" % job_id1, "new")

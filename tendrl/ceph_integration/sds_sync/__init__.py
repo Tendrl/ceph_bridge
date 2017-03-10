@@ -1,3 +1,4 @@
+import copy
 import datetime
 import logging
 
@@ -46,24 +47,24 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         self._sync_objects = SyncObjects(self.name)
 
     def _ping_cluster(self):
-        if tendrl_ns.tendrl_context.fsid:
-            cluster_data = ceph.heartbeat(tendrl_ns.tendrl_context.fsid)
-            tendrl_ns.tendrl_context.fsid = self.fsid = cluster_data['fsid']
+        if NS.tendrl_context.fsid:
+            cluster_data = ceph.heartbeat(NS.tendrl_context.fsid)
+            NS.tendrl_context.fsid = self.fsid = cluster_data['fsid']
         else:
             cluster_data = ceph.heartbeat()
             if cluster_data:
                 if "fsid" in cluster_data:
-                    tendrl_ns.tendrl_context.fsid = self.fsid = cluster_data['fsid']
-                    tendrl_ns.tendrl_context.create_local_fsid()
+                    NS.tendrl_context.fsid = self.fsid = cluster_data['fsid']
+                    NS.tendrl_context.create_local_fsid()
 
-        tendrl_ns.tendrl_context.name = self.name = cluster_data['name']
+        NS.tendrl_context.name = self.name = cluster_data['name']
 
     def _run(self):
         LOG.info("%s running" % self.__class__.__name__)
 
         while not self._complete.is_set():
             gevent.sleep(3)
-            cluster_data = ceph.heartbeat(tendrl_ns.tendrl_context.fsid)
+            cluster_data = ceph.heartbeat(NS.tendrl_context.fsid)
 
             self.on_heartbeat(cluster_data)
 
@@ -98,19 +99,19 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         self._sync_ec_profiles()
 
     def _sync_rbds(self):
-        pools = tendrl_ns.etcd_orm.client.read(
-            "clusters/%s/Pools" % tendrl_ns.tendrl_context.integration_id,
+        pools = NS.etcd_orm.client.read(
+            "clusters/%s/Pools" % NS.tendrl_context.integration_id,
             recursive=True
         )
         for child in pools._children:
             pool_id = child['key'].split('/')[-1]
-            pool_name = tendrl_ns.etcd_orm.client.read(
+            pool_name = NS.etcd_orm.client.read(
                 "clusters/%s/Pools/%s/pool_name" %
-                (tendrl_ns.tendrl_context.integration_id, pool_id)
+                (NS.tendrl_context.integration_id, pool_id)
             ).value
             rbd_details = self._get_rbds(pool_name)
             for k,v in rbd_details.iteritems():
-                tendrl_ns.ceph_integration.objects.Rbd(
+                NS.ceph_integration.objects.Rbd(
                     name=k,
                     size=v['size'],
                     pool_id=pool_id,
@@ -136,7 +137,8 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         2.
         ```ceph osd erasure-code-profile get {name}```
 
-        and the required output format is '=' separated values in multiple lines
+        and the required output format is '=' separated values in multiple
+        lines
 
         ```
         k=2
@@ -157,7 +159,7 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         commands = [
             'osd', 'erasure-code-profile', 'ls'
         ]
-        cmd_out = ceph.ceph_command(tendrl_ns.tendrl_context.name, commands)
+        cmd_out = ceph.ceph_command(NS.tendrl_context.name, commands)
         if cmd_out['err'] == "":
             ec_profile_list = []
             for item in cmd_out['out'].split('\n'):
@@ -169,7 +171,7 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                     'osd', 'erasure-code-profile', 'get', ec_profile
                 ]
                 cmd_out = ceph.ceph_command(
-                    tendrl_ns.tendrl_context.name,
+                    NS.tendrl_context.name,
                     commands
                 )
                 if cmd_out['err'] == "":
@@ -181,7 +183,7 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                             ec_profile_details[ec_profile] = info
         available_ec_profiles = []
         for k, v in ec_profile_details.iteritems():
-            tendrl_ns.ceph_integration.objects.ECProfile(
+            NS.ceph_integration.objects.ECProfile(
                 name=k,
                 k=v['k'],
                 m=v['m'],
@@ -211,26 +213,26 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
 
         assert data['fsid'] == self.fsid
 
-        sync_object = data['data']
+        sync_object = copy.deepcopy(data['data'])
 
         sync_type = SYNC_OBJECT_STR_TYPE[data['type']]
         new_object = self.inject_sync_object(
             data['type'], data['version'], sync_object
         )
         if new_object:
-            tendrl_ns.ceph_integration.objects.SyncObject(
-                updated=now(),sync_type=sync_type.str,
+            NS.ceph_integration.objects.SyncObject(
+                updated=now(), sync_type=sync_type.str,
                 version=new_object.version if isinstance(new_object.version,
                                                          int) else None,
-                when=now(), data=sync_object).save()
+                when=now(), data=data['data']).save()
 
             if sync_type.str == "health":
-                tendrl_ns.ceph_integration.objects.GlobalDetails(
+                NS.ceph_integration.objects.GlobalDetails(
                     status=sync_object['overall_status']
                 ).save()
             if sync_type.str == "osd_map":
                 util_data = self._get_utilization_data()
-                tendrl_ns.ceph_integration.objects.Utilization(
+                NS.ceph_integration.objects.Utilization(
                     total=util_data['cluster']['total'],
                     used=util_data['cluster']['used'],
                     available=util_data['cluster']['available'],
@@ -248,17 +250,19 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                         raw_pool['erasure_code_profile'] != "":
                         pool_type = 'erasure_coded'
                     quota_enabled = False
-                    if ('quota_max_objects' in raw_pool and \
+                    if ('quota_max_objects' in raw_pool and
                         raw_pool['quota_max_objects'] > 0) or \
-                        ('quota_max_bytes' in raw_pool and \
-                        raw_pool['quota_max_bytes'] > 0):
+                        ('quota_max_bytes' in raw_pool and
+                         raw_pool['quota_max_bytes'] > 0):
                         quota_enabled = True
-                    tendrl_ns.ceph_integration.objects.Pool(
+                    NS.ceph_integration.objects.Pool(
                         pool_id=raw_pool['pool'],
                         pool_name=raw_pool['pool_name'],
                         pg_num=raw_pool['pg_num'],
                         type=pool_type,
-                        erasure_code_profile=raw_pool.get('erasure_code_profile'),
+                        erasure_code_profile=raw_pool.get(
+                            'erasure_code_profile'
+                        ),
                         min_size=raw_pool['min_size'],
                         size=raw_pool.get('size', None),
                         quota_enabled=quota_enabled,

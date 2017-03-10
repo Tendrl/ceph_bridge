@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class Rbd(objects.CephIntegrationBaseObject):
+class Rbd(objects.BaseObject):
     def __init__(self, name=None, size=None,
                  pool_id=None, flags=None, provisioned=None,
                  used=None, *args, **kwargs):
@@ -26,5 +26,5 @@ class _Rbd(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.integration_id, self.pool_id, self.name)
+            (NS.tendrl_context.integration_id, self.pool_id, self.name)
         return super(_Rbd, self).render()

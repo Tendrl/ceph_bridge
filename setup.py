@@ -110,6 +110,7 @@ setup(
         "namespaces",
         "python-etcd",
         "pytz",
+        "ruamel.yaml",
         "tendrl-commons",
         ],
     entry_points={

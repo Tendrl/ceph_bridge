@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class Pool(objects.CephIntegrationBaseObject):
+class Pool(objects.BaseObject):
     def __init__(self, pool_id=None,
                  pool_name=None, pg_num=None, min_size=None, size=None,
                  used=None, percent_used=None,
@@ -37,5 +37,5 @@ class _Pool(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ %\
-            (tendrl_ns.tendrl_context.integration_id, self.pool_id)
+            (NS.tendrl_context.integration_id, self.pool_id)
         return super(_Pool, self).render()

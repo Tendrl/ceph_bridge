@@ -1,11 +1,11 @@
 from tendrl.ceph_integration.manager.crud import Crud
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
 
-class Resize(objects.CephIntegrationBaseAtom):
+class Resize(objects.BaseAtom):
     obj = Rbd
     def __init__(self, *args, **kwargs):
         super(Resize, self).__init__(*args, **kwargs)
@@ -16,16 +16,16 @@ class Resize(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Re-sizing rbd %s on pool %s to %s" %
                     (self.parameters['Rbd.name'],
                      self.parameters['Rbd.pool_id'],
                      self.parameters['Rbd.size'])
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 
@@ -36,15 +36,15 @@ class Resize(objects.CephIntegrationBaseAtom):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={
                         "message": "Failed to resize rbd %s."
                         " Error: %s" % (self.parameters['Rbd.name'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
-                    flow_id=self.parameters["flow_id"],
-                    cluster_id=tendrl_ns.tendrl_context.integration_id,
+                    job_id=self.parameters['job_id'],
+                    flow_id=self.parameters['flow_id'],
+                    cluster_id=NS.tendrl_context.integration_id,
                 )
             )
             return False
@@ -52,16 +52,16 @@ class Resize(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Successfully re-sized rbd %s on pool-id %s to "
                     "%s" % (self.parameters['Rbd.name'],
                             self.parameters['Rbd.pool_id'],
                             self.parameters['Rbd.size'])
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 

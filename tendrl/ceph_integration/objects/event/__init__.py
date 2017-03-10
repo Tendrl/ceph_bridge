@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class Event(objects.CephIntegrationBaseObject):
+class Event(objects.BaseObject):
     def __init__(self, event_id=None, when=None,
                  severity=None, message=None, fsid=None,
                  fqdn=None, service_type=None, service_id=None,

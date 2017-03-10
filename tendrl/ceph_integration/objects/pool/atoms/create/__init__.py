@@ -1,11 +1,11 @@
 from tendrl.ceph_integration.manager.crud import Crud
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
 
-class Create(objects.CephIntegrationBaseAtom):
+class Create(objects.BaseAtom):
     obj = Pool
     def __init__(self, *args, **kwargs):
         super(Create, self).__init__(*args, **kwargs)
@@ -27,14 +27,14 @@ class Create(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Creating pool %s" %
                     self.parameters['Pool.poolname'],
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 
@@ -45,15 +45,15 @@ class Create(objects.CephIntegrationBaseAtom):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={
                         "message": "Failed to create pool %s."
                         " Error: %s" % (self.parameters['Pool.poolname'],
                                         ret_val['error_status'])
                     },
-                    request_id=self.parameters['request_id'],
-                    flow_id=self.parameters["flow_id"],
-                    cluster_id=tendrl_ns.tendrl_context.integration_id,
+                    job_id=self.parameters['job_id'],
+                    flow_id=self.parameters['flow_id'],
+                    cluster_id=NS.tendrl_context.integration_id,
                 )
             )
             return False
@@ -61,14 +61,14 @@ class Create(objects.CephIntegrationBaseAtom):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={
                     "message": "Successfully created pool %s" %
                     self.parameters['Pool.poolname'],
                 },
-                request_id=self.parameters['request_id'],
+                job_id=self.parameters['job_id'],
                 flow_id=self.parameters['flow_id'],
-                cluster_id=tendrl_ns.tendrl_context.integration_id,
+                cluster_id=NS.tendrl_context.integration_id,
             )
         )
 

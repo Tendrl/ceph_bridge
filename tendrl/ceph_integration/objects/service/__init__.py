@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 
-class Service(objects.CephIntegrationBaseObject):
+class Service(objects.BaseObject):
     def __init__(self, fsid=None, service_type=None,
                  service_id=None, running=None, status=None,
                  server_uuid=None, server_fqdn=None, *args, **kwargs):

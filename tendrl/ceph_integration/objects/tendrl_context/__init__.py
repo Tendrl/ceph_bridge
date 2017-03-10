@@ -4,21 +4,21 @@ import os
 import subprocess
 
 from tendrl.commons.etcdobj import EtcdObj
-
-from tendrl.ceph_integration import objects
+from tendrl.commons import objects
 
 LOG = logging.getLogger(__name__)
-
 DEFAULT_CEPH_CLUSTER_NAME = "ceph"
 
-class TendrlContext(objects.CephIntegrationBaseObject):
+
+class TendrlContext(objects.BaseObject):
     def __init__(self, integration_id=None, fsid=None, *args, **kwargs):
         super(TendrlContext, self).__init__(*args, **kwargs)
 
         self.value = 'clusters/%s/TendrlContext'
 
         # integration_id is the Tendrl generated cluster UUID
-        self.integration_id = integration_id or self._get_local_integration_id()
+        self.integration_id = integration_id or \
+            self._get_local_integration_id()
         self.fsid = fsid or self._get_local_fsid()
         self.sds_name, self.sds_version = self._get_sds_details()
         self.integration_name = self._get_integration_name()
@@ -45,8 +45,8 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         with open(tendrl_context_path, 'wb+') as f:
             f.write(self.integration_id)
             LOG.info("SET_LOCAL: "
-                     "tendrl_ns.ceph_integration.objects.TendrlContext.integration_id"
-                     "==%s" %
+                     "NS.ceph_integration.objects.TendrlContext"
+                     ".integration_id==%s" %
                      self.integration_id)
 
     def _get_local_integration_id(self):
@@ -58,7 +58,7 @@ class TendrlContext(objects.CephIntegrationBaseObject):
                     if integration_id:
                         LOG.info(
                             "GET_LOCAL: "
-                            "tendrl_ns.ceph_integration.objects.TendrlContext"
+                            "NS.ceph_integration.objects.TendrlContext"
                             ".integration_id==%s" % integration_id)
                         return integration_id
         except AttributeError:
@@ -69,7 +69,7 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         with open(tendrl_context_path, 'wb+') as f:
             f.write(self.fsid)
             LOG.info("SET_LOCAL: "
-                     "tendrl_ns.ceph_integration.objects.TendrlContext.fsid"
+                     "NS.ceph_integration.objects.TendrlContext.fsid"
                      "==%s" %
                      self.fsid)
 
@@ -82,7 +82,7 @@ class TendrlContext(objects.CephIntegrationBaseObject):
                     if fsid:
                         LOG.info(
                             "GET_LOCAL: "
-                            "tendrl_ns.ceph_integration.objects.TendrlContext"
+                            "NS.ceph_integration.objects.TendrlContext"
                             ".fsid==%s" % fsid)
                         return fsid
         except AttributeError:
@@ -114,7 +114,6 @@ class TendrlContext(objects.CephIntegrationBaseObject):
             return name, version
 
 
-
 class _TendrlContextEtcd(EtcdObj):
     """A table of the tendrl context, lazily updated
     """
@@ -122,5 +121,5 @@ class _TendrlContextEtcd(EtcdObj):
     _tendrl_cls = TendrlContext
 
     def render(self):
-        self.__name__ = self.__name__ % tendrl_ns.tendrl_context.integration_id
+        self.__name__ = self.__name__ % NS.tendrl_context.integration_id
         return super(_TendrlContextEtcd, self).render()

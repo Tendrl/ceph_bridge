@@ -4,7 +4,7 @@ namespace.tendrl.ceph_integration:
   flows:
     CreatePool:
       atoms:
-        - tendrl.ceph_integration.objects.Pool.atoms.create.Create
+        - tendrl.ceph_integration.objects.Pool.atoms.Create
       help: "Create Ceph Pool"
       enabled: true
       inputs:
@@ -20,13 +20,13 @@ namespace.tendrl.ceph_integration:
           - Pool.quota_max_objects
           - Pool.quota_max_bytes
       pre_run:
-        - tendrl.ceph_integration.objects.Pool.atoms.named_pool_not_exists.NamedPoolNotExists
-      run: tendrl.ceph_integration.flows.create_pool.CreatePool
+        - tendrl.ceph_integration.objects.Pool.atoms.NamedPoolNotExists
+      run: tendrl.ceph_integration.flows.CreatePool
       type: Create
       uuid: faeab231-69e9-4c9d-b5ef-a67ed057f98b
     CreateECProfile:
       atoms:
-        - tendrl.ceph_integration.objects.ECProfile.atoms.create.Create
+        - tendrl.ceph_integration.objects.ECProfile.atoms.Create
       help: "Create EC Profile"
       enabled: true
       inputs:
@@ -38,7 +38,7 @@ namespace.tendrl.ceph_integration:
           - ECProfile.plugin
           - ECProfile.directory
           - ECProfile.ruleset_failure_domain
-      run: tendrl.ceph_integration.flows.create_ec_profile.CreateECProfile
+      run: tendrl.ceph_integration.flows.CreateECProfile
       type: Create
       uuid: faeab231-69e9-4c9d-b5ef-a67ed057f98d
   objects:
@@ -119,7 +119,7 @@ namespace.tendrl.ceph_integration:
               - ECProfile.plugin
               - ECProfile.directory
           name: "Create ec profile"
-          run: tendrl.ceph_integration.objects.ECProfile.atoms.create.Create
+          run: tendrl.ceph_integration.objects.ECProfile.atoms.Create
           type: Create
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3730
         Delete:
@@ -129,19 +129,19 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - ECProfile.name
           name: "Delete ec profile"
-          run: tendrl.ceph_integration.objects.ECProfile.atoms.delete.Delete
+          run: tendrl.ceph_integration.objects.ECProfile.atoms.Delete
           type: Delete
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3740
       flows:
         DeleteECProfile:
           atoms:
-            - tendrl.ceph_integration.objects.ECProfile.atoms.delete.Delete
+            - tendrl.ceph_integration.objects.ECProfile.atoms.Delete
           help: "Delete ec profile"
           enabled: true
           inputs:
             mandatory:
               - ECProfile.name
-          run: tendrl.ceph_integration.objects.ECProfile.flows.delete_ec_profile.DeleteECProfile
+          run: tendrl.ceph_integration.objects.ECProfile.flows.DeleteECProfile
           type: Delete
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
       attrs:
@@ -180,7 +180,7 @@ namespace.tendrl.ceph_integration:
               - Rbd.name
               - Rbd.size
           name: "Create Rbd"
-          run: tendrl.ceph_integration.objects.Rbd.atoms.create.Create
+          run: tendrl.ceph_integration.objects.Rbd.atoms.Create
           type: Create
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3720
         Delete:
@@ -191,7 +191,7 @@ namespace.tendrl.ceph_integration:
               - Rbd.pool_id
               - Rbd.name
           name: "Delete Rbd"
-          run: tendrl.ceph_integration.objects.Rbd.atoms.delete.Delete
+          run: tendrl.ceph_integration.objects.Rbd.atoms.Delete
           type: Delete
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3721
         Resize:
@@ -203,7 +203,7 @@ namespace.tendrl.ceph_integration:
               - Rbd.name
               - Rbd.size
           name: "Resize Rbd"
-          run: tendrl.ceph_integration.objects.Rbd.atoms.resize.Resize
+          run: tendrl.ceph_integration.objects.Rbd.atoms.Resize
           type: Update
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3722
         RbdNotExists:
@@ -214,7 +214,7 @@ namespace.tendrl.ceph_integration:
               - Rbd.pool_id
               - Rbd.name
           name: Rbd not exists
-          run: tendrl.ceph_integration.objects.Rbd.atoms.rbd_not_exists.RbdNotExists
+          run: tendrl.ceph_integration.objects.Rbd.atoms.RbdNotExists
           type: Get
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3922
         RbdExists:
@@ -225,13 +225,13 @@ namespace.tendrl.ceph_integration:
               - Rbd.pool_id
               - Rbd.name
           name: Rbd exists
-          run: tendrl.ceph_integration.objects.Rbd.atoms.rbd_exists.RbdExists
+          run: tendrl.ceph_integration.objects.Rbd.atoms.RbdExists
           type: Get
           uuid: 7a2df258-9b24-4fd3-a66f-ee346e2e3922
       flows:
         CreateRbd:
           atoms:
-            - tendrl.ceph_integration.objects.Rbd.atoms.create.Create
+            - tendrl.ceph_integration.objects.Rbd.atoms.Create
           help: "Create Rbd"
           enabled: true
           inputs:
@@ -240,13 +240,13 @@ namespace.tendrl.ceph_integration:
               - Rbd.name
               - Rbd.size
           pre_run:
-            - tendrl.ceph_integration.objects.Rbd.atoms.rbd_not_exists.RbdNotExists
-          run: tendrl.ceph_integration.objects.Rbd.flows.create_rbd.CreateRbd
+            - tendrl.ceph_integration.objects.Rbd.atoms.RbdNotExists
+          run: tendrl.ceph_integration.objects.Rbd.flows.CreateRbd
           type: Create
           uuid: 9bc41d8f-a0cf-420a-b2fe-18761e07f3d2
         DeleteRbd:
           atoms:
-            - tendrl.ceph_integration.objects.Rbd.atoms.delete.Delete
+            - tendrl.ceph_integration.objects.Rbd.atoms.Delete
           help: "Delete Rbd"
           enabled: true
           inputs:
@@ -254,15 +254,15 @@ namespace.tendrl.ceph_integration:
               - Rbd.pool_id
               - Rbd.name
           pre_run:
-            - tendrl.ceph_integration.objects.Rbd.atoms.rbd_exists.RbdExists
-          run: tendrl.ceph_integration.objects.Rbd.flows.delete_rbd.DeleteRbd
+            - tendrl.ceph_integration.objects.Rbd.atoms.RbdExists
+          run: tendrl.ceph_integration.objects.Rbd.flows.DeleteRbd
           post_run:
-            - tendrl.ceph_integration.objects.Rbd.atoms.rbd_not_exists.RbdNotExists
+            - tendrl.ceph_integration.objects.Rbd.atoms.RbdNotExists
           type: Delete
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3a7
         ResizeRbd:
           atoms:
-            - tendrl.ceph_integration.objects.Rbd.atoms.resize.Resize
+            - tendrl.ceph_integration.objects.Rbd.atoms.Resize
           help: "Resize Rbd"
           enabled: true
           inputs:
@@ -271,8 +271,8 @@ namespace.tendrl.ceph_integration:
               - Rbd.name
               - Rbd.size
           pre_run:
-            - tendrl.ceph_integration.objects.Rbd.atoms.rbd_exists.RbdExists
-          run: tendrl.ceph_integration.objects.Rbd.flows.resize_rbd.ResizeRbd
+            - tendrl.ceph_integration.objects.Rbd.atoms.RbdExists
+          run: tendrl.ceph_integration.objects.Rbd.flows.ResizeRbd
           type: Update
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3c9
       attrs:
@@ -317,7 +317,7 @@ namespace.tendrl.ceph_integration:
               - Pool.quota_max_objects
               - Pool.quota_max_bytes
           name: "Create Pool"
-          run: tendrl.ceph_integration.objects.Pool.atoms.create.Create
+          run: tendrl.ceph_integration.objects.Pool.atoms.Create
           type: Create
           uuid: bd0155a8-ff15-42ff-9c76-5176f53c13e0
         Delete:
@@ -327,7 +327,7 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.pool_id
           name: "Delete Pool"
-          run: tendrl.ceph_integration.objects.Pool.atoms.delete.Delete
+          run: tendrl.ceph_integration.objects.Pool.atoms.Delete
           type: Delete
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3720
         Update:
@@ -345,7 +345,7 @@ namespace.tendrl.ceph_integration:
               - Pool.quota_max_objects
               - Pool.quota_max_bytes
           name: "Update Pool"
-          run: tendrl.ceph_integration.objects.Pool.atoms.update.Update
+          run: tendrl.ceph_integration.objects.Pool.atoms.Update
           type: Update
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3721
         ValidUpdateParameters:
@@ -363,7 +363,7 @@ namespace.tendrl.ceph_integration:
               - Pool.quota_max_objects
               - Pool.quota_max_bytes
           name: Valid update parameters
-          run: tendrl.ceph_integration.objects.Pool.atoms.valid_update_parameters.ValidUpdateParameters
+          run: tendrl.ceph_integration.objects.Pool.atoms.ValidUpdateParameters
           type: Get
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3791
         NamedPoolNotExists:
@@ -373,7 +373,7 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.poolname
           name: Named pool not exists
-          run: tendrl.ceph_integration.objects.Pool.atoms.named_pool_not_exists.NamedPoolNotExists
+          run: tendrl.ceph_integration.objects.Pool.atoms.NamedPoolNotExists
           type: Get
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3891
         PoolExists:
@@ -383,7 +383,7 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.pool_id
           name: pool exists
-          run: tendrl.ceph_integration.objects.Pool.atoms.pool_exists.PoolExists
+          run: tendrl.ceph_integration.objects.Pool.atoms.PoolExists
           type: Get
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3832
         PoolNotExists:
@@ -393,28 +393,28 @@ namespace.tendrl.ceph_integration:
             mandatory:
               - Pool.pool_id
           name: pool not exists
-          run: tendrl.ceph_integration.objects.Pool.atoms.pool_not_exists.PoolNotExists
+          run: tendrl.ceph_integration.objects.Pool.atoms.PoolNotExists
           type: Get
           uuid: 9a2df258-9b24-4fd3-a66f-ee346e2e3832
       flows:
         DeletePool:
           atoms:
-            - tendrl.ceph_integration.objects.Pool.atoms.delete.Delete
+            - tendrl.ceph_integration.objects.Pool.atoms.Delete
           help: "Delete Ceph Pool"
           enabled: true
           inputs:
             mandatory:
               - Pool.pool_id
           pre_run:
-            - tendrl.ceph_integration.objects.Pool.atoms.pool_exists.PoolExists
-          run: tendrl.ceph_integration.objects.Pool.flows.delete_pool.DeletePool
+            - tendrl.ceph_integration.objects.Pool.atoms.PoolExists
+          run: tendrl.ceph_integration.objects.Pool.flows.DeletePool
           post_run:
-            - tendrl.ceph_integration.objects.Pool.atoms.pool_not_exists.PoolNotExists
+            - tendrl.ceph_integration.objects.Pool.atoms.PoolNotExists
           type: Delete
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b9
         UpdatePool:
           atoms:
-            - tendrl.ceph_integration.objects.Pool.atoms.update.Update
+            - tendrl.ceph_integration.objects.Pool.atoms.Update
           help: "Update Ceph Pool"
           enabled: true
           inputs:
@@ -429,9 +429,9 @@ namespace.tendrl.ceph_integration:
               - Pool.quota_max_objects
               - Pool.quota_max_bytes
           pre_run:
-            - tendrl.ceph_integration.objects.Pool.atoms.pool_exists.PoolExists
-            - tendrl.ceph_integration.objects.Pool.atoms.valid_update_parametsrs.ValidUpdateParameters
-          run: tendrl.ceph_integration.objects.Pool.flows.update_pool.UpdatePool
+            - tendrl.ceph_integration.objects.Pool.atoms.PoolExists
+            - tendrl.ceph_integration.objects.Pool.atoms.ValidUpdateParameters
+          run: tendrl.ceph_integration.objects.Pool.flows.UpdatePool
           type: Update
           uuid: 4ac41d8f-a0cf-420a-b2fe-18761e07f3b2
       attrs:

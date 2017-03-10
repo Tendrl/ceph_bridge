@@ -22,35 +22,35 @@ class Crud(object):
 
         """
         if object_type == OSD:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update',
                 OSD,
                 object_id,
                 attributes
             )
         elif object_type == POOL:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update',
                 POOL,
                 object_id,
                 attributes
             )
         elif object_type == OSD_MAP:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update_config', OSD, object_id, attributes
             )
 
         elif object_type == CRUSH_MAP:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update', CRUSH_MAP, object_id, attributes
             )
 
         elif object_type == CRUSH_NODE:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update', CRUSH_NODE, object_id, attributes
             )
         elif object_type == RBD:
-            return tendrl_ns.state_sync_thread.request_update(
+            return NS.state_sync_thread.request_update(
                 'update', RBD, object_id, attributes
             )
         else:
@@ -62,7 +62,7 @@ class Crud(object):
         """
 
         if object_type == OSD:
-            return tendrl_ns.state_sync_thread.request_apply(
+            return NS.state_sync_thread.request_apply(
                 OSD,
                 object_id,
                 command
@@ -75,7 +75,7 @@ class Crud(object):
 
         """
         try:
-            valid_commands = tendrl_ns.state_sync_thread.get_valid_commands(
+            valid_commands = NS.state_sync_thread.get_valid_commands(
                 object_type,
                 object_ids
             )
@@ -86,19 +86,19 @@ class Crud(object):
 
     def create(self, object_type, attributes):
         if object_type == POOL:
-            return tendrl_ns.state_sync_thread.request_create(POOL, attributes)
+            return NS.state_sync_thread.request_create(POOL, attributes)
         elif object_type == CRUSH_NODE:
-            return tendrl_ns.state_sync_thread.request_create(
+            return NS.state_sync_thread.request_create(
                 CRUSH_NODE,
                 attributes
             )
         elif object_type == RBD:
-            return tendrl_ns.state_sync_thread.request_create(
+            return NS.state_sync_thread.request_create(
                 RBD,
                 attributes
             )
         elif object_type == EC_PROFILE:
-            return tendrl_ns.state_sync_thread.request_create(
+            return NS.state_sync_thread.request_create(
                 EC_PROFILE,
                 attributes
             )
@@ -107,20 +107,19 @@ class Crud(object):
 
     def delete(self, object_type, object_id):
         if object_type == POOL:
-            return tendrl_ns.state_sync_thread.request_delete(
+            return NS.state_sync_thread.request_delete(
                 POOL,
                 object_id
             )
         elif object_type == CRUSH_NODE:
-            return tendrl_ns.state_sync_thread.request_delete(
+            return NS.state_sync_thread.request_delete(
                 CRUSH_NODE,
                 object_id
             )
         elif object_type == EC_PROFILE:
-            return tendrl_ns.state_sync_thread.request_delete(
+            return NS.state_sync_thread.request_delete(
                 EC_PROFILE,
                 object_id
             )
         else:
             raise NotImplementedError(object_type)
-

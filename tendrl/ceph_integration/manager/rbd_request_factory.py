@@ -19,7 +19,7 @@ LEGACY_MON_OSD_MAX_SPLIT_COUNT = "32"
 class RbdRequestFactory(RequestFactory):
 
     def _resolve_pool(self, pool_id):
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
+        osd_map = NS.state_sync_thread.get_sync_object(OsdMap)
         return osd_map.pools_by_id[pool_id]
 
     def delete_rbd(self, pool_id=None, rbd_name=None):
@@ -44,7 +44,6 @@ class RbdRequestFactory(RequestFactory):
         )
 
     def update(self, rbd_name, attributes):
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
         pool = self._resolve_pool(attributes['pool_id'])
         pool_name = pool['pool_name']
 
@@ -62,7 +61,6 @@ class RbdRequestFactory(RequestFactory):
             )
 
     def create(self, attributes):
-        osd_map = tendrl_ns.state_sync_thread.get_sync_object(OsdMap)
         pool = self._resolve_pool(attributes['pool_id'])
         pool_name = pool['pool_name']
 

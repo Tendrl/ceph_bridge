@@ -16,6 +16,7 @@ Requires: python-gevent
 Requires: python-greenlet
 Requires: pytz
 Requires: python-msgpack
+Requires: ruamel.yaml
 Requires: tendrl-commons
 
 %description
