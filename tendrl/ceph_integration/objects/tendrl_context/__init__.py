@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 
 from tendrl.ceph_integration import objects
 
@@ -109,13 +110,16 @@ class TendrlContext(objects.CephIntegrationBaseObject):
         )
         out, err = cmd.communicate()
         if err and 'command not found' in err:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=tendrl_ns.publisher_id,
-                    payload={"message": "ceph not installed on host"}
+            try:
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "ceph not installed on host"}
+                    )
                 )
-            )
+            except AttributeError:
+                sys.stdout.write("ceph not installed on host")
             return None
 
         # The output format from the command `ceph --version` is
