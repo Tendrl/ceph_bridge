@@ -11,12 +11,7 @@ BuildRequires: python2-devel
 BuildRequires: pytest
 BuildRequires: systemd
 
-Requires: python-etcd
-Requires: python-gevent
-Requires: python-greenlet
-Requires: pytz
 Requires: python-msgpack
-Requires: ruamel.yaml
 Requires: tendrl-commons
 
 %description

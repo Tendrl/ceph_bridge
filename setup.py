@@ -104,12 +104,7 @@ setup(
         # Note tendrl-ceph-integration depends on ceph itself (at least ceph-common
         # and python-rados), which can be installed from system (rpm or deb)
         # packages only.
-        "gevent>=1.0",
         "msgpack-python",
-        "maps",
-        "python-etcd",
-        "pytz",
-        "ruamel.yaml",
         "tendrl-commons",
         ],
     entry_points={
