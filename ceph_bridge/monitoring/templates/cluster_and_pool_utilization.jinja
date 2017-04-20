@@ -1,0 +1,10 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/"
+
+    Import "ceph_cluster_utilization"
+
+    <Module "ceph_cluster_utilization">
+        CLUSTER_NAME "{{cluster_name}}"
+        INTERVAL {{interval}}
+    </Module>
+</Plugin>
