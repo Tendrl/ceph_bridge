@@ -1,11 +1,12 @@
-from tendrl.commons import flows
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
+from tendrl.commons import flows
 from tendrl.commons.message import Message
 
 
 class UpdatePool(flows.BaseFlow):
     obj = Pool
+
     def __init__(self, *args, **kwargs):
         super(UpdatePool, self).__init__(*args, **kwargs)
 

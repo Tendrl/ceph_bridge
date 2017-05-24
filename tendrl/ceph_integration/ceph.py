@@ -1,5 +1,5 @@
-from glob import glob
 import gevent.event
+from glob import glob
 import hashlib
 import json
 import os
@@ -389,7 +389,8 @@ def rbd_command(cluster_name, command_args, pool_name=None):
     """
 
     if pool_name:
-        args = ["rbd", "--pool", pool_name, "--cluster", cluster_name] + command_args
+        args = ["rbd", "--pool", pool_name, "--cluster", cluster_name] + \
+            command_args
     else:
         args = ["rbd", "--cluster", cluster_name] + command_args
 
@@ -400,7 +401,7 @@ def rbd_command(cluster_name, command_args, pool_name=None):
         stdin=open(os.devnull, "r"),
         close_fds=True
     )
-    if p.poll() is None: # Force kill if process is still alive
+    if p.poll() is None:  # Force kill if process is still alive
         gevent.sleep(2)
         if p.poll() is None:
             p.kill()
@@ -576,7 +577,8 @@ def get_cluster_object(cluster_name, sync_type):
                         Message(
                             priority="error",
                             publisher=NS.publisher_id,
-                            payload={"message": "Metadata not available for OSD: %s" % osd_id}
+                            payload={"message": "Metadata not"
+                                     " available for OSD: %s" % osd_id}
                         )
                     )
                     continue
@@ -654,12 +656,6 @@ def get_heartbeats():
         else:
             if not service_data:
                 continue
-
-            service_name = "%s-%s.%s" % (
-                service_data['cluster'],
-                service_data['type'],
-                service_data['id']
-            )
 
             fsid_names[service_data['fsid']] = service_data['cluster']
 

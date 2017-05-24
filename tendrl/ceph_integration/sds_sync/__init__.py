@@ -5,7 +5,6 @@ import gevent.event
 from pytz import utc
 
 
-from tendrl.commons import sds_sync
 from tendrl.ceph_integration import ceph
 from tendrl.ceph_integration.manager.crud import Crud
 from tendrl.ceph_integration.manager.crush_node_request_factory import \
@@ -22,15 +21,21 @@ from tendrl.ceph_integration.manager.rbd_request_factory import \
     RbdRequestFactory
 from tendrl.ceph_integration.manager.request_collection import \
     RequestCollection
-from tendrl.ceph_integration.objects import pool
 from tendrl.ceph_integration.sds_sync.sync_objects import SyncObjects
-from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES, \
-    SYNC_OBJECT_STR_TYPE, CRUSH_MAP, CRUSH_NODE, OSD, POOL, RBD, \
-    EC_PROFILE
+
+from tendrl.ceph_integration.types import CRUSH_MAP
+from tendrl.ceph_integration.types import CRUSH_NODE
+from tendrl.ceph_integration.types import EC_PROFILE
+from tendrl.ceph_integration.types import OSD
+from tendrl.ceph_integration.types import POOL
+from tendrl.ceph_integration.types import RBD
+from tendrl.ceph_integration.types import SYNC_OBJECT_STR_TYPE
+from tendrl.ceph_integration.types import SYNC_OBJECT_TYPES
 from tendrl.ceph_integration.util import now
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import sds_sync
 
 
 class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
@@ -58,7 +63,8 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
             cluster_data = ceph.heartbeat()
             if cluster_data:
                 if "fsid" in cluster_data:
-                    NS.tendrl_context.cluster_id = self.fsid = cluster_data['fsid']
+                    NS.tendrl_context.cluster_id = self.fsid = \
+                        cluster_data['fsid']
 
         NS.tendrl_context.cluster_name = self.name = cluster_data['name']
         NS.tendrl_context.save()
@@ -134,7 +140,7 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                 (NS.tendrl_context.integration_id, pool_id)
             ).value
             rbd_details = self._get_rbds(pool_name)
-            for k,v in rbd_details.iteritems():
+            for k, v in rbd_details.iteritems():
                 NS.ceph.objects.Rbd(
                     name=k,
                     size=v['size'],
@@ -146,8 +152,8 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                 ).save()
 
     def _sync_ec_profiles(self):
-        """
-        Invokes the below CLI commands
+        """Invokes the below CLI commands
+
         1.
         ```ceph osd erasure-code-profile ls```
 
@@ -155,10 +161,9 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         lines as below
 
         ```
-        default
-        k4m2
+           default
+           k4m2
         ```
-
         2.
         ```ceph osd erasure-code-profile get {name}```
 
@@ -166,10 +171,10 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         lines
 
         ```
-        k=2
-        m=1
-        plugin=jerasure
-        directory={dir}
+           k=2
+           m=1
+           plugin=jerasure
+           directory={dir}
         ```
 
         """
@@ -263,7 +268,7 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                     used=util_data['cluster']['used'],
                     available=util_data['cluster']['available'],
                     pcnt_used=util_data['cluster']['pcnt_used']
-                ).save()
+                ).save(update=False)
 
                 for raw_pool in sync_object.get('pools', []):
                     Event(
@@ -347,9 +352,10 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                              }
                 )
             )
+
     def _get_rbds(self, pool_name):
-        """
-        Invokes the below CLI commands
+        """Invokes the below CLI commands
+
         1.
         ```rbd ls --pool {name}```
 
@@ -357,8 +363,8 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
         lines as below
 
         ```
-        mmrbd1
-        mmdrbd2
+           mmrbd1
+           mmdrbd2
         ```
 
         2.
@@ -368,16 +374,15 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
 
         ```
         rbd image 'mmrbd1':
-	       size 1024 MB in 256
-           order 22 (4096 kB objects)
-           block_name_prefix: rbd_data.1e31238e1f29
-           format: 2
-           features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
-           flags:
+            size 1024 MB in 256
+        order 22 (4096 kB objects)
+        block_name_prefix: rbd_data.1e31238e1f29
+        format: 2
+        features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+        flags:
         ```
 
         """
-
         rbd_details = {}
 
         commands = [

@@ -1,13 +1,14 @@
 import etcd
 
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 
 
 class RbdExists(objects.BaseAtom):
     obj = Rbd
+
     def __init__(self, *args, **kwargs):
         super(RbdExists, self).__init__(*args, **kwargs)
 

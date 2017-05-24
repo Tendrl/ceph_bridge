@@ -10,6 +10,7 @@ from tendrl.ceph_integration.util import now
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
+
 class PublishError(Exception):
     pass
 
@@ -397,6 +398,7 @@ class OsdMapModifyingRequest(RadosRequest):
                 )
             )
 
+
 class ECProfileModifyingRequest(CephRequest):
     def __init__(self, headline, commands):
         super(ECProfileModifyingRequest, self).__init__(
@@ -485,8 +487,10 @@ class PoolCreatingRequest(OsdMapModifyingRequest):
                             payload={
                                 "message": "'{0}' not found, pools are "
                                            "{1}".format(self._pool_name,
-                        [p['pool_name']for p in osd_map.pools_by_id.values()]
-                                                        )
+                                                        [p['pool_name']
+                                                         for p in
+                                                         osd_map.pools_by_id.
+                                                         values()])
                             }
                         )
                     )

@@ -1,13 +1,14 @@
 import etcd
 
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 
 
 class PoolExists(objects.BaseAtom):
     obj = Pool
+
     def __init__(self, *args, **kwargs):
         super(PoolExists, self).__init__(*args, **kwargs)
 

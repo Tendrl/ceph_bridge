@@ -1,14 +1,15 @@
-from tendrl.commons import objects
 from tendrl.ceph_integration.manager.exceptions import \
     RequestStateError
 from tendrl.ceph_integration.manager.rbd_crud import RbdCrud
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 
 
 class Delete(objects.BaseAtom):
     obj = Rbd
+
     def __init__(self, *args, **kwargs):
         super(Delete, self).__init__(*args, **kwargs)
 

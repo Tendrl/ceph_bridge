@@ -1,15 +1,16 @@
 from tendrl.ceph_integration.manager.crud import Crud
 from tendrl.ceph_integration.manager.exceptions import \
     RequestStateError
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 from tendrl.commons.objects import AtomExecutionFailedError
 
 
 class Update(objects.BaseAtom):
     obj = Pool
+
     def __init__(self, *args, **kwargs):
         super(Update, self).__init__(*args, **kwargs)
 

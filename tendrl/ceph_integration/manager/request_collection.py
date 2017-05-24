@@ -3,6 +3,7 @@ from tendrl.ceph_integration.manager.user_request import UserRequest
 
 
 class RequestCollection(object):
+
     def __init__(self):
         super(RequestCollection, self).__init__()
         self._by_request_id = {}
@@ -15,7 +16,8 @@ class RequestCollection(object):
         if not state:
             return self._by_request_id.values()
         else:
-            return [r for r in self._by_request_id.values() if r.state == state]
+            return [r for r in self._by_request_id.values()
+                    if r.state == state]
 
     def on_map(self, sync_type, sync_object):
         with self._lock:

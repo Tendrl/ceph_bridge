@@ -14,4 +14,3 @@ class Config(objects.BaseObject):
             'ceph-integration',
             "/etc/tendrl/ceph-integration/ceph-integration.conf.yaml")
         self.value = '_NS/ceph/config'
-

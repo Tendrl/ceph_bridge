@@ -1,7 +1,7 @@
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 
 
 class RbdNotExists(objects.BaseAtom):

@@ -1,5 +1,3 @@
-import json
-import uuid
 from sets import Set
 
 import etcd
@@ -7,11 +5,12 @@ import etcd
 from tendrl.ceph_integration.manager.crud import Crud
 from tendrl.ceph_integration.manager.exceptions import \
     RequestStateError
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
-from tendrl.commons.objects.job import Job
 from tendrl.commons.message import Message
+from tendrl.commons import objects
+from tendrl.commons.objects.job import Job
+import uuid
 
 
 class Create(objects.BaseAtom):
@@ -43,7 +42,7 @@ class Create(objects.BaseAtom):
                 Set(self.parameters.keys())))
             if not missing_params:
                 # Mapping the passed pool parameters into required keys
-                pool_parameters={}
+                pool_parameters = {}
                 for key, value in self.parameters.items():
                     if "Rbd.pool_" in key:
                         pool_parameters[key.replace("Rbd.pool_", "Pool.")] =\
@@ -115,7 +114,7 @@ class Create(objects.BaseAtom):
                 if pool_created:
                     # Setting pool_id for rbd creation
                     pool_id = self._get_pool_id(self.parameters[
-                                                    'Rbd.pool_poolname'])
+                        'Rbd.pool_poolname'])
                     if pool_id:
                         self.parameters['Rbd.pool_id'] = pool_id
                     else:

@@ -1,19 +1,18 @@
-import logging
-
 from tendrl.ceph_integration.manager.request_factory import RequestFactory
-from tendrl.ceph_integration.manager.user_request import ECProfileCreatingRequest
-from tendrl.ceph_integration.manager.user_request import ECProfileModifyingRequest
+from tendrl.ceph_integration.manager.user_request import \
+    ECProfileCreatingRequest
+from tendrl.ceph_integration.manager.user_request import \
+    ECProfileModifyingRequest
 
 
 class ECProfileRequestFactory(RequestFactory):
     def create(self, attributes):
-        """
-        Invokes the CLI command
+        """Invokes the CLI command
 
         ceph osd erasure-code-profile set {name} directory={dir} plugin={name}
         k={value} m={value}
-
         """
+
         commands = [
             'osd', 'erasure-code-profile', 'set', attributes['name'],
             'directory=%s' % attributes['directory'],
@@ -27,12 +26,11 @@ class ECProfileRequestFactory(RequestFactory):
             attributes['name'], commands)
 
     def delete(self, ec_profile_name):
-        """
-        Invokes the CLI command
+        """Invokes the CLI command
 
         ceph osd erasure-code-profile rm {name}
-
         """
+
         commands = [
             'osd', 'erasure-code-profile', 'rm', ec_profile_name
         ]

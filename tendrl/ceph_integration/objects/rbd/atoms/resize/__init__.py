@@ -1,14 +1,15 @@
 from tendrl.ceph_integration.manager.crud import Crud
 from tendrl.ceph_integration.manager.exceptions import \
     RequestStateError
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 
 
 class Resize(objects.BaseAtom):
     obj = Rbd
+
     def __init__(self, *args, **kwargs):
         super(Resize, self).__init__(*args, **kwargs)
 

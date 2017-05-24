@@ -8,6 +8,7 @@ from tendrl.ceph_integration.types import OsdMap
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
+
 class CrushNodeRequestFactory(RequestFactory):
     """Map REST API verbs onto CLI reality
 

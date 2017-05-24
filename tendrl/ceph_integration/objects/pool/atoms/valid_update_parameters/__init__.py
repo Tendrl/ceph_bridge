@@ -1,12 +1,13 @@
-from tendrl.commons import objects
 from tendrl.ceph_integration.objects.pool import Pool
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons import objects
 from tendrl.commons.objects import AtomExecutionFailedError
 
 
 class ValidUpdateParameters(objects.BaseAtom):
     obj = Pool
+
     def __init__(self, *args, **kwargs):
         super(ValidUpdateParameters, self).__init__(*args, **kwargs)
 

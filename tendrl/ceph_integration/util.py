@@ -1,7 +1,7 @@
 import datetime
-from pytz import utc
 import gevent.event
 import gevent.greenlet
+from pytz import utc
 
 
 def now():

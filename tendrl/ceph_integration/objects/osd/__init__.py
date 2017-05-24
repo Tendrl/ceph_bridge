@@ -31,7 +31,6 @@ class Osd(objects.BaseObject):
         self.last_clean_end = last_clean_end
         self.value = 'clusters/{0}/Osds/{1}'
 
-
     def render(self):
         self.value = self.value.format(
             NS.tendrl_context.integration_id,

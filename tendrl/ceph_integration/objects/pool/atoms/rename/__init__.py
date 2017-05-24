@@ -1,14 +1,14 @@
 from tendrl.ceph_integration.manager.crud import Crud
 from tendrl.ceph_integration.manager.exceptions import \
     RequestStateError
-from tendrl.commons import objects
-from tendrl.ceph_integration.objects.pool import Pool
+
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
-from tendrl.commons.objects import AtomExecutionFailedError
+from tendrl.commons import objects
 
 
 class Rename(objects.BaseAtom):
+
     def __init__(self, *args, **kwargs):
         super(Rename, self).__init__(*args, **kwargs)
 
@@ -17,7 +17,7 @@ class Rename(objects.BaseAtom):
         attrs = {}
         attrs['name'] = self.parameters.get('Pool.poolname')
         existing_name = NS._int.client.read(
-            "clusters/%s/Pools/%s/pool_name" % \
+            "clusters/%s/Pools/%s/pool_name" %
             (
                 NS.tendrl_context.integration_id,
                 self.parameters['Pool.pool_id']
@@ -28,7 +28,8 @@ class Rename(objects.BaseAtom):
                 priority="info",
                 publisher=NS.publisher_id,
                 payload={
-                    "message": "Renaming the pool:%s with new name: %s" %
+                    "message": "Renaming the pool:"
+                               "%s with new name: %s" %
                     (existing_name,
                      self.parameters.get('Pool.poolname'))
                     },
@@ -48,7 +49,8 @@ class Rename(objects.BaseAtom):
                     priority="error",
                     publisher=NS.publisher_id,
                     payload={
-                        "message": "Failed to rename pool: %s with new name: %s"
+                        "message": "Failed to rename pool:"
+                                   "%s with new name: %s"
                         " Error: %s" % (existing_name,
                                         self.parameters.get('Pool.poolname'),
                                         ex)
@@ -65,7 +67,8 @@ class Rename(objects.BaseAtom):
                 priority="info",
                 publisher=NS.publisher_id,
                 payload={
-                    "message": "Pool: %s successfully renamed with new name: %s" %
+                    "message": "Pool:"
+                               "%s successfully renamed with new name: %s" %
                     (existing_name, self.parameters.get('Pool.poolname'))
                     },
                 job_id=self.parameters['job_id'],

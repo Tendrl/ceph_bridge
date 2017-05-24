@@ -1,11 +1,12 @@
-from tendrl.commons import flows
 from tendrl.ceph_integration.objects.rbd import Rbd
 from tendrl.commons.event import Event
+from tendrl.commons import flows
 from tendrl.commons.message import Message
 
 
 class DeleteRbd(flows.BaseFlow):
     obj = Rbd
+
     def __init__(self, *args, **kwargs):
         super(DeleteRbd, self).__init__(*args, **kwargs)
 

@@ -7,6 +7,7 @@ from tendrl.ceph_integration.util import now
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
+
 class SyncObjects(object):
     """A collection of versioned objects, keyed by their class (which
 
@@ -193,4 +194,3 @@ class SyncObjects(object):
             new_object = self.set_map(sync_type, version, data)
 
         return new_object
-
