@@ -32,7 +32,7 @@ class Create(objects.BaseAtom):
                 cluster_id=NS.tendrl_context.integration_id,
             )
         )
-        if not self.parameters.get('Rbd.pool_id'):
+        if 'Rbd.pool_id' not in self.parameters:
             # Checking if mandatory parameters for pool creation are present
             mandatory_pool_params = Set(["Rbd.pool_poolname",
                                          "Rbd.pool_pg_num",
