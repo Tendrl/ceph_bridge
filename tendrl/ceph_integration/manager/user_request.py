@@ -1,6 +1,7 @@
 import uuid
 
 from tendrl.ceph_integration import ceph
+from tendrl.ceph_integration import librbd_utils
 from tendrl.ceph_integration.types import OsdMap
 from tendrl.ceph_integration.types import PgSummary
 from tendrl.ceph_integration.types import USER_REQUEST_COMPLETE
@@ -301,14 +302,13 @@ class RbdRequest(UserRequest):
 
     """
 
-    def __init__(self, headline, pool_name, commands):
-        self._commands = commands
-        self._pool_name = pool_name
+    def __init__(self, headline, attributes):
+        self._attributes = attributes
         super(RbdRequest, self).__init__(headline)
 
-    def _submit(self, commands=None):
-        if commands is None:
-            commands = self._commands
+    def _submit(self, attributes=None):
+        if attributes is None:
+            attributes = self._attributes
 
         Event(
             Message(
@@ -317,16 +317,15 @@ class RbdRequest(UserRequest):
                 payload={"message": "%s._submit: %s/%s" %
                                     (self.__class__.__name__,
                                      NS.state_sync_thread.name,
-                                     commands
+                                     attributes
                                      )
                          }
             )
         )
 
-        return ceph.rbd_command(
+        return librbd_utils.rbd_operation(
             NS.state_sync_thread.name,
-            commands,
-            self._pool_name
+            attributes,
         )
 
 
@@ -418,9 +417,9 @@ class RbdMapModifyingRequest(RbdRequest):
 
     """
 
-    def __init__(self, headline, pool_name, commands):
+    def __init__(self, headline, attributes):
         super(RbdMapModifyingRequest, self).__init__(
-            headline, pool_name, commands)
+            headline, attributes)
 
     @property
     def associations(self):
@@ -514,11 +513,10 @@ class ECProfileCreatingRequest(ECProfileModifyingRequest):
 
 
 class RbdCreatingRequest(RbdMapModifyingRequest):
-    def __init__(self, headline, rbd_name, pool_name,
-                 commands):
+    def __init__(self, headline, attributes):
         super(RbdCreatingRequest, self).__init__(
-            headline, pool_name, commands)
-        self._rbd_name = rbd_name
+            headline, attributes)
+        self._rbd_name = attributes['name']
 
 
 class PgProgress(object):

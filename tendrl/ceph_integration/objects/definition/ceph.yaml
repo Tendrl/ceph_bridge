@@ -164,8 +164,8 @@ namespace.ceph:
             mandatory:
               - Rbd.name
               - Rbd.size
-            optional:
               - Rbd.pool_id
+            optional:
               - Rbd.pool_crush_ruleset
               - Rbd.pool_erasure_code_profile
               - Rbd.pool_min_size

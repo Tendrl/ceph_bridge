@@ -20,8 +20,9 @@ class RbdRequestFactory(RequestFactory):
 
     def delete_rbd(self, pool_id=None, rbd_name=None):
         # Resolve pool ID to name
-        pool_name = self._resolve_pool(pool_id)['pool_name']
-
+        attributes = {}
+        attributes['pool_name'] = self._resolve_pool(pool_id)['pool_name']
+        attributes['operation'] = 'delete'
         # TODO(Rohan) perhaps the REST API should have something in the body to
         # make it slightly harder to accidentally delete a pool, to respect
         # the severity of this operation since we're hiding the
@@ -31,39 +32,31 @@ class RbdRequestFactory(RequestFactory):
         # e.g.
         # if the name is wrong we should be sending a structured errors dict
         # that they can use to associate the complaint with the 'name' field.
-        commands = [
-            'rm', rbd_name
-        ]
+        attributes['name'] = rbd_name
         return RbdMapModifyingRequest(
             "Deleting image '{name}'".format(name=rbd_name),
-            pool_name, commands
+            attributes
         )
 
     def update(self, rbd_name, attributes):
         pool = self._resolve_pool(attributes['pool_id'])
-        pool_name = pool['pool_name']
+        attributes['pool_name'] = pool['pool_name']
+        attributes['name'] = rbd_name
+        attributes['operation'] = "update"
 
-        if 'size' in attributes:
-            commands = [
-                'resize', '--image', rbd_name, '--size', attributes.get('size')
-            ]
-            return RbdMapModifyingRequest(
-                "Modifying image '{name}' ({attrs})".format(
-                    name=rbd_name, attrs=", ".join(
-                        "%s=%s" % (k, v) for k, v in attributes.items())
-                ),
-                pool_name,
-                commands
-            )
+        return RbdMapModifyingRequest(
+            "Modifying image '{name}' ({attrs})".format(
+                name=rbd_name, attrs=", ".join(
+                    "%s=%s" % (k, v) for k, v in attributes.items())
+            ),
+            attributes
+        )
 
     def create(self, attributes):
         pool = self._resolve_pool(attributes['pool_id'])
-        pool_name = pool['pool_name']
-
-        commands = [
-            'create', attributes['name'], '--size', attributes['size']
-        ]
+        attributes['pool_name'] = pool['pool_name']
+        attributes['operation'] = "create"
 
         return RbdCreatingRequest(
             "Creating image '{name}'".format(name=attributes['name']),
-            attributes['name'], pool_name, commands)
+            attributes)
