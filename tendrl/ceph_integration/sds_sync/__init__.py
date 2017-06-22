@@ -122,7 +122,9 @@ class CephIntegrationSdsSyncStateThread(sds_sync.SdsSyncThread):
                     )
 
         while not self._complete.is_set():
-            gevent.sleep(10)
+            gevent.sleep(
+                int(NS.config.data.get("sync_interval", 10))
+            )
             cluster_data = ceph.heartbeat(NS.tendrl_context.cluster_id)
 
             self.on_heartbeat(cluster_data)

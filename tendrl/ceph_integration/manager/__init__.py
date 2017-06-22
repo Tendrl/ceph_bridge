@@ -3,7 +3,6 @@ import gevent.event
 import signal
 
 from tendrl import ceph_integration
-from tendrl.ceph_integration import sds_sync
 
 from tendrl.commons.event import Event
 from tendrl.commons import manager
@@ -28,6 +27,8 @@ def main():
 
     NS.type = "sds"
     NS.publisher_id = "ceph_integration"
+
+    from tendrl.ceph_integration import sds_sync
 
     NS.state_sync_thread = sds_sync.CephIntegrationSdsSyncStateThread()
 
