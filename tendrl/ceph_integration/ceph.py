@@ -863,11 +863,7 @@ def _heartbeat(fsid):
 
 
 def heartbeat(fsid=None):
-    try:
-        import rados
-    except ImportError:
-        # Ceph isn't installed, report no services or clusters
-        return None, {}
+    import rados
 
     try:
         return _heartbeat(fsid)
