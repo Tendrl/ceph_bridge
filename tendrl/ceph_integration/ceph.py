@@ -51,6 +51,13 @@ class AdminSocketError(MonitoringError):
     pass
 
 
+class AdminSocketNotFoundError(MonitoringError):
+    """Sockets not found in /var/run/ceph.
+
+    """
+    pass
+
+
 def get_ceph_version():
     result = ceph_command(None, ['--version'])
     try:
@@ -657,19 +664,22 @@ def get_heartbeats():
 
     """
 
-    try:
-        import rados
-    except ImportError:
-        # Ceph isn't installed, report no services or clusters
-        return None, {}
+    import rados
 
     # Map of FSID to path string string
     mon_sockets = {}
     # FSID string to cluster name string
     fsid_names = {}
+    
+    sock_glob = "/var/run/ceph/*.asok"
+    sock_files = glob(sock_glob)
+
+    if not sock_files:
+        # If Admin Sockets are not found 
+        raise AdminSocketNotFoundError("ceph admin sockets not found at %s" % sock_glob)
 
     # For each admin socket, try to interrogate the service
-    for filename in glob("/var/run/ceph/*.asok"):
+    for filename in sock_files:
         try:
             if "client" in filename:
                 continue
@@ -871,7 +881,7 @@ def heartbeat(fsid=None):
         sys.stdout.write("Error getting heartbeat for ceph cluster fsid %s"
                          % fsid)
         sys.stdout.write(str(ex))
-        if type(ex) in [rados.Error, MonitoringError, AdminSocketError]:
+        if type(ex) in [rados.Error, MonitoringError, AdminSocketError, AdminSocketNotFoundError]:
             raise ex
 
 
